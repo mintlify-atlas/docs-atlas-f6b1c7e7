@@ -1,76 +1,89 @@
 ---
-title: "Invoices API — Generate and Retrieve Invoices"
-description: "ViniHotel invoice API reference: generate billing records, retrieve tax breakdowns, update payment status, and list all invoices as an admin."
+title: "Invoices API — Generar y Obtener Facturas"
+description: "Referencia de la API de facturas de ViniHotel: generar registros de facturación, obtener desglose de impuestos, actualizar estado de pago y listar todas las facturas como administrador."
 ---
 
-The Invoices API manages billing records in ViniHotel. Each invoice is tied to a booking and a user, and contains a full price breakdown including subtotal, taxes, total, and any additional charges such as resort fees or parking. Invoices are created after a booking is confirmed and can be updated as payment status changes.
+La Invoices API gestiona los registros de facturación en ViniHotel. Cada factura está vinculada a una reserva y a un usuario, y contiene un desglose completo del precio incluyendo subtotal, impuestos, total y cualquier cargo adicional como tarifas de resort o estacionamiento. Las facturas se crean después de que una reserva es confirmada y pueden actualizarse a medida que cambia el estado del pago.
 
 <Note>
-  All invoice endpoints require an `Authorization: Bearer <token>` header unless otherwise noted. The token is obtained from `/api/auth/login`.
+  Todos los endpoints de facturas requieren un header `Authorization: Bearer <token>` salvo que se indique lo contrario. El token se obtiene desde `/api/auth/login`.
 </Note>
 
 ---
 
 ## GET /api/invoices/my-invoices
 
-Returns all invoices belonging to the currently authenticated user, joined with room and hotel details. Requires authentication.
+Devuelve todas las facturas pertenecientes al usuario autenticado actualmente, combinadas con detalles de habitación y hotel. Requiere autenticación.
 
-The server extracts the `userId` from the JWT to filter results.
+El servidor extrae el `userId` del JWT para filtrar los resultados.
 
 ### Headers
 
 <ParamField header="Authorization" type="string" required>
-  `Bearer <token>` — JWT obtained on login.
+  `Bearer <token>` — JWT obtenido al iniciar sesión.
 </ParamField>
 
-### Response
+### Respuesta
 
 <ResponseField name="[]" type="object[]">
-  Array of invoice objects for the authenticated user.
-  <Expandable title="invoice object properties">
+  Array de objetos factura del usuario autenticado.
+
+  <Expandable title="propiedades del objeto factura">
     <ResponseField name="id" type="string" required>
-      UUID of the invoice.
+      UUID de la factura.
     </ResponseField>
+
     <ResponseField name="bookingId" type="string" required>
-      UUID of the associated booking.
+      UUID de la reserva asociada.
     </ResponseField>
+
     <ResponseField name="userId" type="integer" required>
-      ID of the user who owns the invoice.
+      ID del usuario propietario de la factura.
     </ResponseField>
+
     <ResponseField name="subtotal" type="number" required>
-      Amount before taxes, in USD.
+      Monto antes de impuestos, en USD.
     </ResponseField>
+
     <ResponseField name="taxes" type="number" required>
-      Tax amount in USD.
+      Monto de impuestos en USD.
     </ResponseField>
+
     <ResponseField name="total" type="number" required>
-      Final total: `subtotal + taxes`, in USD.
+      Total final: `subtotal + taxes`, en USD.
     </ResponseField>
+
     <ResponseField name="additionalCharges" type="object" required>
-      JSON object with any extra charges, e.g. `{ "resort_fee": 15.00, "parking": 10.00 }`. Empty object `{}` if none.
+      Objeto JSON con cargos adicionales, ej. `{ "resort_fee": 15.00, "parking": 10.00 }`. Objeto vacío `{}` si no hay ninguno.
     </ResponseField>
+
     <ResponseField name="paymentMethod" type="string" required>
-      Payment method used: `credit_card`, `debit-card`, `paypal`, or `twallet`.
+      Método de pago utilizado: `credit_card`, `debit-card`, `paypal`, o `twallet`.
     </ResponseField>
+
     <ResponseField name="paymentStatus" type="string" required>
-      Payment status: `pending`, `paid`, `failed`, or `refunded`.
+      Estado del pago: `pending`, `paid`, `failed`, o `refunded`.
     </ResponseField>
+
     <ResponseField name="issuedDate" type="string" required>
-      ISO 8601 timestamp of when the invoice was issued.
+      Timestamp ISO 8601 de cuándo fue emitida la factura.
     </ResponseField>
+
     <ResponseField name="roomId" type="string">
-      UUID of the room from the associated booking (joined).
+      UUID de la habitación de la reserva asociada (combinado).
     </ResponseField>
+
     <ResponseField name="hotelId" type="string">
-      UUID of the hotel (joined).
+      UUID del hotel (combinado).
     </ResponseField>
+
     <ResponseField name="hotelName" type="string">
-      Name of the hotel (joined).
+      Nombre del hotel (combinado).
     </ResponseField>
   </Expandable>
 </ResponseField>
 
-### Example
+### Ejemplo
 
 ```bash
 curl http://localhost:5000/api/invoices/my-invoices \
@@ -101,313 +114,3 @@ curl http://localhost:5000/api/invoices/my-invoices \
 ```
 
 ---
-
-## GET /api/invoices/:id
-
-Returns a single invoice by its UUID. Requires authentication.
-
-### Path parameters
-
-<ParamField path="id" type="string" required>
-  UUID of the invoice to retrieve.
-</ParamField>
-
-### Response
-
-<ResponseField name="id" type="string" required>
-  UUID of the invoice.
-</ResponseField>
-<ResponseField name="bookingId" type="string" required>
-  UUID of the associated booking.
-</ResponseField>
-<ResponseField name="userId" type="integer" required>
-  ID of the user who owns the invoice.
-</ResponseField>
-<ResponseField name="subtotal" type="number" required>
-  Amount before taxes in USD.
-</ResponseField>
-<ResponseField name="taxes" type="number" required>
-  Tax amount in USD.
-</ResponseField>
-<ResponseField name="total" type="number" required>
-  Final total in USD (`subtotal + taxes`).
-</ResponseField>
-<ResponseField name="additionalCharges" type="object" required>
-  JSON object with extra charges. Empty object `{}` if none.
-</ResponseField>
-<ResponseField name="paymentMethod" type="string" required>
-  Payment method: `credit_card`, `debit-card`, `paypal`, or `twallet`.
-</ResponseField>
-<ResponseField name="paymentStatus" type="string" required>
-  Payment status: `pending`, `paid`, `failed`, or `refunded`.
-</ResponseField>
-<ResponseField name="issuedDate" type="string" required>
-  ISO 8601 timestamp of invoice issuance.
-</ResponseField>
-<ResponseField name="createdAt" type="string" required>
-  ISO 8601 timestamp of record creation.
-</ResponseField>
-<ResponseField name="updatedAt" type="string" required>
-  ISO 8601 timestamp of last update.
-</ResponseField>
-
-### Example
-
-```bash
-curl http://localhost:5000/api/invoices/invoice-uuid-1234 \
-  -H "Authorization: Bearer <token>"
-```
-
-```json
-{
-  "id": "invoice-uuid-1234",
-  "bookingId": "booking-uuid-abcd",
-  "userId": 12,
-  "subtotal": 720.00,
-  "taxes": 108.00,
-  "total": 828.00,
-  "additionalCharges": {
-    "resort_fee": 15.00,
-    "service_charge": 20.50,
-    "parking": 10.00
-  },
-  "paymentMethod": "credit_card",
-  "paymentStatus": "pending",
-  "issuedDate": "2026-04-29 14:30:00",
-  "createdAt": "2026-04-29 14:30:00",
-  "updatedAt": "2026-04-29 14:30:00"
-}
-```
-
-<Warning>
-  Returns `404` with `{ "error": "Factura no encontrada" }` if no invoice exists with the given `id`.
-</Warning>
-
----
-
-## POST /api/invoices
-
-Creates a new invoice for a booking. Requires authentication. The `userId` is taken from the authenticated user's JWT — you do not need to pass it in the request body.
-
-### Body parameters
-
-<ParamField body="bookingId" type="string" required>
-  UUID of the booking this invoice is generated for.
-</ParamField>
-<ParamField body="subtotal" type="number" required>
-  Amount before taxes in USD.
-</ParamField>
-<ParamField body="taxes" type="number" required>
-  Tax amount in USD.
-</ParamField>
-<ParamField body="total" type="number" required>
-  Final total in USD. Should equal `subtotal + taxes`.
-</ParamField>
-<ParamField body="paymentMethod" type="string" required>
-  Payment method. One of: `credit_card`, `debit-card`, `paypal`, `twallet`.
-</ParamField>
-<ParamField body="additionalCharges" type="object" default="{}">
-  JSON object for extra charges beyond the room rate. Defaults to `{}`.
-
-  ```json
-  {
-    "resort_fee": 15.00,
-    "service_charge": 20.50,
-    "parking": 10.00
-  }
-  ```
-</ParamField>
-<ParamField body="paymentStatus" type="string" default="pending">
-  Initial payment status. One of: `pending`, `paid`, `failed`, `refunded`. Defaults to `"pending"`.
-</ParamField>
-
-### Response
-
-<ResponseField name="message" type="string" required>
-  Confirmation: `"Factura creada exitosamente"`.
-</ResponseField>
-<ResponseField name="id" type="string" required>
-  UUID assigned to the newly created invoice.
-</ResponseField>
-
-### Example
-
-```bash
-curl -X POST http://localhost:5000/api/invoices \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d '{
-    "bookingId": "booking-uuid-abcd",
-    "subtotal": 720.00,
-    "taxes": 108.00,
-    "total": 853.50,
-    "paymentMethod": "credit_card",
-    "additionalCharges": {
-      "resort_fee": 15.00,
-      "parking": 10.00
-    },
-    "paymentStatus": "pending"
-  }'
-```
-
-```json
-{
-  "message": "Factura creada exitosamente",
-  "id": "invoice-uuid-1234"
-}
-```
-
----
-
-## PUT /api/invoices/:id
-
-Updates the `paymentStatus` or `paymentMethod` of an existing invoice. Requires authentication.
-
-### Path parameters
-
-<ParamField path="id" type="string" required>
-  UUID of the invoice to update.
-</ParamField>
-
-### Body parameters
-
-<ParamField body="paymentStatus" type="string">
-  Updated payment status. One of: `pending`, `paid`, `failed`, `refunded`.
-</ParamField>
-<ParamField body="paymentMethod" type="string">
-  Updated payment method. One of: `credit_card`, `debit-card`, `paypal`, `twallet`.
-</ParamField>
-
-### Response
-
-<ResponseField name="message" type="string" required>
-  Confirmation: `"Factura actualizada exitosamente"`.
-</ResponseField>
-
-### Example
-
-```bash
-curl -X PUT http://localhost:5000/api/invoices/invoice-uuid-1234 \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d '{"paymentStatus": "paid"}'
-```
-
-```json
-{
-  "message": "Factura actualizada exitosamente"
-}
-```
-
-<Warning>
-  Returns `404` with `{ "error": "Factura no encontrada" }` if no invoice exists with the given `id`.
-</Warning>
-
----
-
-## GET /api/invoices
-
-Returns all invoices in the system, joined with user details (`email`, `nombre`, `apellido`). Intended for admin users.
-
-<Warning>
-  This endpoint returns billing data for every user. Restrict access to users with `rol: "admin"` in production.
-</Warning>
-
-### Response
-
-<ResponseField name="[]" type="object[]">
-  Array of all invoice objects.
-  <Expandable title="invoice object properties">
-    <ResponseField name="id" type="string" required>
-      UUID of the invoice.
-    </ResponseField>
-    <ResponseField name="bookingId" type="string" required>
-      UUID of the associated booking.
-    </ResponseField>
-    <ResponseField name="userId" type="integer" required>
-      ID of the invoice owner.
-    </ResponseField>
-    <ResponseField name="subtotal" type="number" required>
-      Amount before taxes in USD.
-    </ResponseField>
-    <ResponseField name="taxes" type="number" required>
-      Tax amount in USD.
-    </ResponseField>
-    <ResponseField name="total" type="number" required>
-      Final total in USD.
-    </ResponseField>
-    <ResponseField name="additionalCharges" type="object" required>
-      Parsed JSON object of additional charges.
-    </ResponseField>
-    <ResponseField name="paymentMethod" type="string" required>
-      Payment method used.
-    </ResponseField>
-    <ResponseField name="paymentStatus" type="string" required>
-      Payment status.
-    </ResponseField>
-    <ResponseField name="issuedDate" type="string" required>
-      Timestamp of invoice issuance.
-    </ResponseField>
-    <ResponseField name="email" type="string">
-      User's email address (joined from `usuarios`).
-    </ResponseField>
-    <ResponseField name="nombre" type="string">
-      User's first name (joined from `usuarios`).
-    </ResponseField>
-    <ResponseField name="apellido" type="string">
-      User's last name (joined from `usuarios`).
-    </ResponseField>
-  </Expandable>
-</ResponseField>
-
-### Example
-
-```bash
-curl http://localhost:5000/api/invoices \
-  -H "Authorization: Bearer <admin_token>"
-```
-
-```json
-[
-  {
-    "id": "invoice-uuid-1234",
-    "bookingId": "booking-uuid-abcd",
-    "userId": 12,
-    "subtotal": 720.00,
-    "taxes": 108.00,
-    "total": 828.00,
-    "additionalCharges": {},
-    "paymentMethod": "credit_card",
-    "paymentStatus": "paid",
-    "issuedDate": "2026-04-29 14:30:00",
-    "email": "maria@example.com",
-    "nombre": "Maria",
-    "apellido": "Lopez"
-  }
-]
-```
-
----
-
-## Payment statuses
-
-| Status | Description |
-|--------|-------------|
-| `pending` | Invoice issued, payment not yet received. Default on creation. |
-| `paid` | Payment collected successfully. |
-| `failed` | Payment attempt failed. |
-| `refunded` | Payment returned to the guest, typically after booking cancellation. |
-
-## Additional charges
-
-The `additionalCharges` field accepts any flat JSON object mapping charge names to amounts in USD. Common examples:
-
-```json
-{
-  "resort_fee": 15.00,
-  "service_charge": 20.50,
-  "parking": 10.00
-}
-```
-
-If there are no additional charges, the field defaults to `{}` and is returned as an empty object — never `null`.

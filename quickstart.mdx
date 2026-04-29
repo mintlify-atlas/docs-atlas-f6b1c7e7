@@ -1,39 +1,37 @@
 ---
-title: "Get Started with ViniHotel"
-description: "Set up ViniHotel locally in minutes: install dependencies, configure environment variables, and run the backend and frontend servers."
+title: "Comenzar con ViniHotel"
+description: "Configura ViniHotel localmente en minutos: instala dependencias, configura variables de entorno y ejecuta los servidores backend y frontend."
 ---
 
-ViniHotel requires two servers running simultaneously — an Express backend on port 5000 and a Vite frontend on port 5173. This guide walks through every step from cloning the repository to logging in with a test account.
+ViniHotel requiere dos servidores ejecutándose simultáneamente — un backend Express en el puerto 5000 y un frontend Vite en el puerto 5173. Esta guía te lleva paso a paso desde clonar el repositorio hasta iniciar sesión con una cuenta de prueba.
 
-## Prerequisites
+## Prerrequisitos
 
-- **Node.js 16 or later** — check with `node --version`
-- **Two terminal windows** — one for the backend, one for the frontend
-- The backend must be started before the frontend so the database is ready when the React app loads
+- **Node.js 16 o posterior** — verifica con `node --version`
+- **Dos ventanas de terminal** — una para el backend, otra para el frontend
+- El backend debe iniciarse antes que el frontend para que la base de datos esté lista cuando la aplicación React cargue
 
-## Setup steps
+## Pasos de configuración
 
 <Steps>
-  <Step title="Get the code">
-    Clone or download the ViniHotel repository so you have the project root and the `backend/` subdirectory available locally.
+  <Step title="Obtener el código">
+    Clona o descarga el repositorio de ViniHotel para tener la raíz del proyecto y el subdirectorio `backend/` disponibles localmente.
 
     ```bash
     git clone <your-repo-url> ViniHotel
     cd ViniHotel
     ```
   </Step>
-
-  <Step title="Install backend dependencies">
-    In your first terminal, navigate to the `backend/` folder and install its Node.js dependencies.
+  <Step title="Instalar dependencias del backend">
+    En tu primera terminal, navega a la carpeta `backend/` e instala sus dependencias de Node.js.
 
     ```bash
     cd backend
     npm install
     ```
   </Step>
-
-  <Step title="Create the backend .env file">
-    The backend reads configuration from a `.env` file in the `backend/` directory. Create it with the following content:
+  <Step title="Crear el archivo .env del backend">
+    El backend lee la configuración desde un archivo `.env` en el directorio `backend/`. Créalo con el siguiente contenido:
 
     ```bash
     PORT=5000
@@ -45,82 +43,78 @@ ViniHotel requires two servers running simultaneously — an Express backend on 
     ```
 
     <Warning>
-      Change `JWT_SECRET` to a long, random string before deploying to any non-local environment. Never commit your `.env` file to version control — it is already listed in `.gitignore`.
+      Cambia `JWT_SECRET` por una cadena larga y aleatoria antes de desplegar en cualquier entorno que no sea local. Nunca subas tu archivo `.env` al control de versiones — ya está incluido en `.gitignore`.
     </Warning>
   </Step>
-
-  <Step title="Start the backend server">
-    Still inside `backend/`, start the development server with nodemon. The SQLite database at `backend/data/vinihotel.db` is created automatically on first run, and sample hotels, rooms, and users are seeded.
+  <Step title="Iniciar el servidor backend">
+    Aún dentro de `backend/`, inicia el servidor de desarrollo con nodemon. La base de datos SQLite en `backend/data/vinihotel.db` se crea automáticamente en la primera ejecución, y se cargan datos de ejemplo de hoteles, habitaciones y usuarios.
 
     ```bash
     npm run dev
     ```
 
-    You should see output like:
+    Deberías ver una salida como:
 
-    ```
+    ```text
     ✅ Servidor corriendo en http://localhost:5000
     🔌 CORS habilitado para: http://localhost:5173
     ```
   </Step>
-
-  <Step title="Install frontend dependencies">
-    Open a second terminal, navigate to the project root (not `backend/`), and install frontend dependencies.
+  <Step title="Instalar dependencias del frontend">
+    Abre una segunda terminal, navega a la raíz del proyecto (no a `backend/`) e instala las dependencias del frontend.
 
     ```bash
     npm install
     ```
   </Step>
-
-  <Step title="Start the frontend dev server">
-    From the project root, start Vite. It connects to the backend automatically via `src/utils/apiClient.ts`, which points to `http://localhost:5000/api`.
+  <Step title="Iniciar el servidor de desarrollo del frontend">
+    Desde la raíz del proyecto, inicia Vite. Se conecta automáticamente al backend mediante `src/utils/apiClient.ts`, que apunta a `http://localhost:5000/api`.
 
     ```bash
     npm run dev
     ```
 
-    Vite will output a local URL:
+    Vite mostrará una URL local:
 
-    ```
+    ```text
     VITE v6.x.x  ready in Xms
     ➜  Local:   http://localhost:5173/
     ```
   </Step>
-
-  <Step title="Open the app">
-    Navigate to `http://localhost:5173` in your browser. You will see the ViniHotel home page with the hotel listing.
+  <Step title="Abrir la aplicación">
+    Navega a `http://localhost:5173` en tu navegador. Verás la página principal de ViniHotel con el listado de hoteles.
   </Step>
 </Steps>
 
-## Test credentials
+## Credenciales de prueba
 
-Sample users are seeded automatically by the backend on first startup. Use these accounts to explore each role without registering.
+Los usuarios de ejemplo se crean automáticamente por el backend en el primer inicio. Usa estas cuentas para explorar cada rol sin registrarte.
 
 | Email | Password | Role |
-|-------|----------|------|
+| --- | --- | --- |
 | `juan@example.com` | `password123` | `client` |
 | `maria@example.com` | `password123` | `client` |
 | `admin@example.com` | `admin123` | `admin` |
 
 <Note>
-  The admin account has access to all pages including staff management (`/staff`), hotel management (`/hotels`), booking management (`/bookings`), housekeeping (`/housekeeping`), and reports (`/reports`).
+  La cuenta de administrador tiene acceso a todas las páginas incluyendo gestión de personal (`/staff`), gestión de hoteles (`/hotels`), gestión de reservas (`/bookings`), limpieza (`/housekeeping`) y reportes (`/reports`).
 </Note>
 
-## Health check
+## Verificación de funcionamiento (Health check)
 
-Verify the backend is running correctly with a quick curl request:
+Verifica que el backend esté funcionando correctamente con una solicitud curl rápida:
 
 ```bash
 curl http://localhost:5000/api/health
 ```
 
-Expected response:
+Respuesta esperada:
 
 ```json
 { "status": "Backend running" }
 ```
 
-You can also test the login endpoint directly:
+También puedes probar el endpoint de inicio de sesión directamente:
 
 ```bash
 curl -X POST http://localhost:5000/api/auth/login \
@@ -128,12 +122,12 @@ curl -X POST http://localhost:5000/api/auth/login \
   -d '{"email":"juan@example.com","contrasena":"password123"}'
 ```
 
-## Troubleshooting
+## Solución de problemas
 
-| Problem | Solution |
-|---------|----------|
-| `npm install` fails | Run `npm cache clean --force` then retry |
-| Port 5000 already in use | Set `PORT=5001` in `backend/.env` |
-| CORS error in browser console | Verify `CORS_ORIGIN=http://localhost:5173` in `backend/.env` |
-| Database error on startup | Delete `backend/data/vinihotel.db` and restart the backend to recreate it |
-| "Invalid token" or auth errors | Clear `localStorage` in DevTools: F12 → Application → Local Storage → delete `token` |
+| Problema | Solución |
+| --- | --- |
+| `npm install` falla | Ejecuta `npm cache clean --force` y vuelve a intentarlo |
+| El puerto 5000 ya está en uso | Establece `PORT=5001` en `backend/.env` |
+| Error de CORS en la consola del navegador | Verifica que `CORS_ORIGIN=http://localhost:5173` esté en `backend/.env` |
+| Error de base de datos al iniciar | Elimina `backend/data/vinihotel.db` y reinicia el backend para recrearla |
+| "Invalid token" o errores de autenticación | Limpia `localStorage` en DevTools: F12 → Application → Local Storage → elimina `token` |

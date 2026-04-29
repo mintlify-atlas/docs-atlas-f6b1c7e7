@@ -1,83 +1,87 @@
 ---
-title: "API Authentication with Bearer Tokens"
-description: "How to register, log in, and authenticate ViniHotel API requests using JWT bearer tokens with a 7-day expiry and role-based access control."
+title: "Autenticación de la API con Tokens Bearer"
+description: "Cómo registrarse, iniciar sesión y autenticar solicitudes a la API de ViniHotel usando tokens JWT Bearer con expiración de 7 días y control de acceso basado en roles."
 ---
 
-The ViniHotel API uses JSON Web Tokens (JWT) for authentication. After registering or logging in, the server returns a signed token that must be included as a bearer token in the `Authorization` header of every protected request. Tokens expire after 7 days and encode the user's ID and role (`client`, `staff`, or `admin`).
+La API de ViniHotel usa JSON Web Tokens (JWT) para la autenticación. Tras registrarse o iniciar sesión, el servidor devuelve un token firmado que debe incluirse como token Bearer en el encabezado `Authorization` de cada solicitud protegida. Los tokens expiran tras 7 días y codifican el ID y el rol del usuario (`client`, `staff` o `admin`).
 
-## Register
+## Registro
 
-Creates a new user account with the `client` role and returns an immediately usable JWT token.
+Crea una nueva cuenta de usuario con el rol `client` y devuelve un token JWT listo para usar de inmediato.
 
 **`POST /api/auth/register`**
 
-### Request body
+### Cuerpo de la solicitud
 
 <ParamField body="nombre" type="string" required>
-  First name of the user.
+  Nombre del usuario.
 </ParamField>
 
 <ParamField body="apellido" type="string" required>
-  Last name of the user.
+  Apellido del usuario.
 </ParamField>
 
 <ParamField body="email" type="string" required>
-  Unique email address. Returns `400` if the address is already registered.
+  Dirección de correo electrónico única. Devuelve `400` si la dirección ya está registrada.
 </ParamField>
 
 <ParamField body="contrasena" type="string" required>
-  Plain-text password (minimum 6 characters). Stored as a bcrypt hash — never persisted in plain text.
+  Contraseña en texto plano (mínimo 6 caracteres). Se almacena como hash bcrypt — nunca persiste en texto plano.
 </ParamField>
 
 <ParamField body="phone" type="string">
-  Contact phone number.
+  Número de teléfono de contacto.
 </ParamField>
 
 <ParamField body="address" type="string">
-  Postal or street address.
+  Dirección postal o de calle.
 </ParamField>
 
 <ParamField body="nationality" type="string">
-  User's nationality.
+  Nacionalidad del usuario.
 </ParamField>
 
 <ParamField body="documentId" type="string">
-  Passport or national ID number.
+  Número de pasaporte o identificación nacional.
 </ParamField>
 
-### Response
+### Respuesta
 
 <ResponseField name="message" type="string">
-  Confirmation string: `"Usuario registrado exitosamente"`.
+  Cadena de confirmación: `"Usuario registrado exitosamente"`.
 </ResponseField>
 
 <ResponseField name="token" type="string">
-  Signed JWT bearer token, valid for 7 days.
+  Token JWT Bearer firmado, válido por 7 días.
 </ResponseField>
 
 <ResponseField name="user" type="object">
-  Subset of the newly created user record.
+  Subconjunto del registro del usuario recién creado.
 
-  <Expandable title="user fields">
+  <Expandable title="campos de user">
     <ResponseField name="idUsuario" type="integer">
-      Auto-incremented primary key of the `usuarios` table.
+      Clave primaria auto-incrementada de la tabla `usuarios`.
     </ResponseField>
+
     <ResponseField name="nombre" type="string">
-      First name.
+      Nombre.
     </ResponseField>
+
     <ResponseField name="apellido" type="string">
-      Last name.
+      Apellido.
     </ResponseField>
+
     <ResponseField name="email" type="string">
-      Email address.
+      Dirección de correo electrónico.
     </ResponseField>
+
     <ResponseField name="rol" type="string">
-      Always `"client"` for self-registration.
+      Siempre `"client"` para el auto-registro.
     </ResponseField>
   </Expandable>
 </ResponseField>
 
-### Example
+### Ejemplo
 
 <CodeGroup>
 
@@ -105,37 +109,37 @@ curl -X POST http://localhost:5000/api/auth/register \
 
 ---
 
-## Login
+## Inicio de sesión
 
-Authenticates an existing user by email and password and returns a fresh JWT token.
+Autentica a un usuario existente mediante correo electrónico y contraseña, y devuelve un nuevo token JWT.
 
 **`POST /api/auth/login`**
 
-### Request body
+### Cuerpo de la solicitud
 
 <ParamField body="email" type="string" required>
-  Registered email address.
+  Dirección de correo electrónico registrada.
 </ParamField>
 
 <ParamField body="contrasena" type="string" required>
-  Account password. Note the Spanish field name — `contrasena`, not `password`.
+  Contraseña de la cuenta. Nota el nombre del campo en español — `contrasena`, no `password`.
 </ParamField>
 
-### Response
+### Respuesta
 
 <ResponseField name="message" type="string">
-  Confirmation string: `"Login exitoso"`.
+  Cadena de confirmación: `"Login exitoso"`.
 </ResponseField>
 
 <ResponseField name="token" type="string">
-  Signed JWT bearer token, valid for 7 days.
+  Token JWT Bearer firmado, válido por 7 días.
 </ResponseField>
 
 <ResponseField name="user" type="object">
-  Core user fields: `idUsuario`, `nombre`, `apellido`, `email`, `rol`.
+  Campos principales del usuario: `idUsuario`, `nombre`, `apellido`, `email`, `rol`.
 </ResponseField>
 
-### Example
+### Ejemplo
 
 <CodeGroup>
 
@@ -162,60 +166,60 @@ curl -X POST http://localhost:5000/api/auth/login \
 </CodeGroup>
 
 <Warning>
-  Both register and login return a generic `401` error (`"Email o contraseña incorrectos"`) when credentials are wrong, without revealing which field failed, to prevent user enumeration.
+  Tanto el registro como el inicio de sesión devuelven un error genérico `401` (`"Email o contraseña incorrectos"`) cuando las credenciales son incorrectas, sin revelar cuál campo falló, para prevenir la enumeración de usuarios.
 </Warning>
 
 ---
 
-## Get Current User
+## Obtener usuario actual
 
-Returns the full profile of the authenticated user, including optional fields set at registration or via profile update.
+Devuelve el perfil completo del usuario autenticado, incluyendo los campos opcionales establecidos en el registro o mediante la actualización del perfil.
 
-**`GET /api/auth/me`** — requires `Authorization: Bearer <token>`
+**`GET /api/auth/me`** — requiere `Authorization: Bearer <token>`
 
-### Response
+### Respuesta
 
 <ResponseField name="idUsuario" type="integer">
-  User's primary key.
+  Clave primaria del usuario.
 </ResponseField>
 
 <ResponseField name="nombre" type="string">
-  First name.
+  Nombre.
 </ResponseField>
 
 <ResponseField name="apellido" type="string">
-  Last name.
+  Apellido.
 </ResponseField>
 
 <ResponseField name="email" type="string">
-  Email address.
+  Dirección de correo electrónico.
 </ResponseField>
 
 <ResponseField name="rol" type="string">
-  Role: `client`, `staff`, or `admin`.
+  Rol: `client`, `staff` o `admin`.
 </ResponseField>
 
 <ResponseField name="phone" type="string">
-  Contact phone number, if set.
+  Número de teléfono de contacto, si está configurado.
 </ResponseField>
 
 <ResponseField name="address" type="string">
-  Address, if set.
+  Dirección, si está configurada.
 </ResponseField>
 
 <ResponseField name="dateOfBirth" type="string">
-  Date of birth, if set.
+  Fecha de nacimiento, si está configurada.
 </ResponseField>
 
 <ResponseField name="nationality" type="string">
-  Nationality, if set.
+  Nacionalidad, si está configurada.
 </ResponseField>
 
 <ResponseField name="documentId" type="string">
-  Passport or national ID number, if set.
+  Número de pasaporte o identificación nacional, si está configurado.
 </ResponseField>
 
-### Example
+### Ejemplo
 
 <CodeGroup>
 
@@ -243,45 +247,45 @@ curl -H "Authorization: Bearer YOUR_TOKEN_HERE" \
 
 ---
 
-## Update Profile
+## Actualizar perfil
 
-Updates mutable fields on the authenticated user's account. The `email`, `rol`, and `contrasena` fields cannot be changed through this endpoint.
+Actualiza los campos modificables de la cuenta del usuario autenticado. Los campos `email`, `rol` y `contrasena` no pueden cambiarse a través de este endpoint.
 
-**`PUT /api/auth/profile`** — requires `Authorization: Bearer <token>`
+**`PUT /api/auth/profile`** — requiere `Authorization: Bearer <token>`
 
-### Request body
+### Cuerpo de la solicitud
 
-Send any subset of the following fields; omitted fields are set to `null` in the database.
+Envía cualquier subconjunto de los siguientes campos; los campos omitidos se establecen en `null` en la base de datos.
 
 <ParamField body="nombre" type="string">
-  Updated first name.
+  Nombre actualizado.
 </ParamField>
 
 <ParamField body="apellido" type="string">
-  Updated last name.
+  Apellido actualizado.
 </ParamField>
 
 <ParamField body="phone" type="string">
-  Updated phone number.
+  Número de teléfono actualizado.
 </ParamField>
 
 <ParamField body="address" type="string">
-  Updated address.
+  Dirección actualizada.
 </ParamField>
 
 <ParamField body="dateOfBirth" type="string">
-  Updated date of birth.
+  Fecha de nacimiento actualizada.
 </ParamField>
 
 <ParamField body="nationality" type="string">
-  Updated nationality.
+  Nacionalidad actualizada.
 </ParamField>
 
 <ParamField body="documentId" type="string">
-  Updated passport or national ID number.
+  Número de pasaporte o identificación nacional actualizado.
 </ParamField>
 
-### Response
+### Respuesta
 
 ```json
 { "message": "Perfil actualizado exitosamente" }
@@ -289,29 +293,29 @@ Send any subset of the following fields; omitted fields are set to `null` in the
 
 ---
 
-## Using the Token
+## Uso del token
 
-Include the token returned by register or login in every request to a protected endpoint:
+Incluye el token devuelto por el registro o inicio de sesión en cada solicitud a un endpoint protegido:
 
-```
+```text
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-The frontend stores the token in `localStorage` and the `apiClient` utility attaches it automatically. When building your own client, retrieve the token after login and attach it to every subsequent request header.
+El frontend almacena el token en `localStorage` y la utilidad `apiClient` lo adjunta automáticamente. Al construir tu propio cliente, recupera el token tras el inicio de sesión y adjúntalo al encabezado de cada solicitud posterior.
 
 <Note>
-  Tokens encode `userId` and `role` in their payload and are signed with the `JWT_SECRET` environment variable. Always set a strong, unique `JWT_SECRET` in production — never use the default value shipped in the repository.
+  Los tokens codifican `userId` y `role` en su payload y están firmados con la variable de entorno `JWT_SECRET`. Siempre establece un `JWT_SECRET` fuerte y único en producción — nunca uses el valor predeterminado incluido en el repositorio.
 </Note>
 
 ---
 
-## Error Responses
+## Respuestas de error
 
-| HTTP Status | Condition |
-|-------------|-----------|
-| `400 Bad Request` | Validation failed (e.g. missing required field, email already registered) |
-| `401 Unauthorized` | Token missing, expired, or signature invalid — the client must re-authenticate |
-| `403 Forbidden` | Token is valid but the user's role lacks permission for the requested resource |
-| `404 Not Found` | The user referenced by the token no longer exists in the database |
+| Estado HTTP | Condición |
+| --- | --- |
+| `400 Bad Request` | Validación fallida (ej. campo obligatorio faltante, correo electrónico ya registrado) |
+| `401 Unauthorized` | Token ausente, expirado o con firma inválida — el cliente debe volver a autenticarse |
+| `403 Forbidden` | El token es válido pero el rol del usuario no tiene permiso para el recurso solicitado |
+| `404 Not Found` | El usuario referenciado por el token ya no existe en la base de datos |
 
-When a `401` is returned on a protected route, discard the stored token and redirect the user to the login screen. A `403` means the endpoint requires a higher role (`staff` or `admin`) than the current user holds.
+Cuando se devuelve un `401` en una ruta protegida, descarta el token almacenado y redirige al usuario a la pantalla de inicio de sesión. Un `403` significa que el endpoint requiere un rol superior (`staff` o `admin`) al que tiene el usuario actual.

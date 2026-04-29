@@ -1,137 +1,149 @@
 ---
-title: "Manage Hotels and Rooms as an Admin"
-description: "Create, update, and delete ViniHotel hotel listings and room records. Admin-only guide covering hotel fields, room types, pricing, and status management."
+title: "Gestionar Hoteles y Habitaciones como Administrador"
+description: "Crea, actualiza y elimina listados de hoteles y registros de habitaciones en ViniHotel. Guía exclusiva para administradores que cubre campos de hotel, tipos de habitación, precios y gestión de estados."
 ---
 
-The hotel management dashboard is the central control panel for all properties in the ViniHotel chain. Accessible at the `/hotels` route, it lets administrators create new hotels, update existing listings, and manage the rooms associated with each property. The dashboard displays three live summary metrics — total hotels, average rating across the chain, and the number of unique locations — providing a quick operational overview before you drill into individual records.
+El panel de gestión de hoteles es el centro de control para todas las propiedades de la cadena ViniHotel. Accesible en la ruta `/hotels`, permite a los administradores crear nuevos hoteles, actualizar listados existentes y gestionar las habitaciones asociadas a cada propiedad. El panel muestra tres métricas de resumen en tiempo real — total de hoteles, calificación promedio de la cadena y número de ubicaciones únicas — ofreciendo una vista operativa rápida antes de profundizar en registros individuales.
 
 <Warning>
-  This section is restricted to users with the **admin** role. Staff members and guests cannot access `/hotels` or the hotel management API endpoints.
+  Esta sección está restringida a usuarios con el rol **admin**. Los miembros del personal y los huéspedes no pueden acceder a `/hotels` ni a los endpoints de la API de gestión de hoteles.
 </Warning>
 
-## Hotel fields
+## Campos del hotel
 
-Each hotel record stores the following fields, which map directly to the `hoteles` table in the database.
+Cada registro de hotel almacena los siguientes campos, que corresponden directamente a la tabla `hoteles` en la base de datos.
 
 <CardGroup cols={2}>
   <Card title="nombre" icon="hotel">
-    The display name of the hotel (e.g. `Gran Hotel ViniHotel`). Required. Stored as `nombre` in the database.
+    El nombre visible del hotel (ej. `Gran Hotel ViniHotel`). Obligatorio. Almacenado como `nombre` en la base de datos.
   </Card>
+
   <Card title="description" icon="align-left">
-    A detailed description of the property. Required. Supports multi-line text up to the limit of the `TEXT` column type.
+    Una descripción detallada de la propiedad. Obligatorio. Admite texto multilínea hasta el límite del tipo de columna `TEXT`.
   </Card>
+
   <Card title="location" icon="map-pin">
-    The geographic location of the hotel (e.g. `Madrid, España`). Required. Used in search filtering and the Locations summary card.
+    La ubicación geográfica del hotel (ej. `Madrid, España`). Obligatorio. Se utiliza en el filtrado de búsqueda y en la tarjeta de resumen de ubicaciones.
   </Card>
+
   <Card title="image" icon="image">
-    A URL pointing to the hotel's main cover image. If left blank, a default Unsplash hotel image is applied automatically.
+    Una URL que apunta a la imagen de portada principal del hotel. Si se deja en blanco, se aplica automáticamente una imagen de hotel de Unsplash por defecto.
   </Card>
+
   <Card title="rating" icon="star">
-    A numeric star rating between `1.0` and `5.0` (step `0.1`). Defaults to `4.5`. Stored as a `REAL` column. Contributes to the chain-wide average rating.
+    Una calificación numérica en estrellas entre `1.0` y `5.0` (paso `0.1`). Por defecto es `4.5`. Almacenado como columna `REAL`. Contribuye al promedio de calificación de toda la cadena.
   </Card>
+
   <Card title="amenities" icon="list">
-    A JSON array of amenity strings stored in the `amenities` column. Entered one item at a time in the UI, then serialized on save. Example: `["WiFi", "Piscina", "Gym", "Spa", "Restaurante 24/7"]`.
+    Un array JSON de cadenas de servicios almacenado en la columna `amenities`. Se ingresa un elemento a la vez en la interfaz y se serializa al guardar. Ejemplo: `["WiFi", "Piscina", "Gym", "Spa", "Restaurante 24/7"]`.
   </Card>
 </CardGroup>
 
-## Creating a hotel
+## Crear un hotel
 
 <Steps>
-  <Step title="Open the Add Hotel dialog">
-    Navigate to `/hotels` and click the **Agregar Hotel** button in the top-right of the hotel list card. The form dialog opens and resets any previous input.
+  <Step title="Abre el diálogo Agregar Hotel">
+    Navega a `/hotels` y haz clic en el botón **Agregar Hotel** en la parte superior derecha de la tarjeta de listado de hoteles. El diálogo del formulario se abre y restablece cualquier entrada previa.
   </Step>
-  <Step title="Fill in the required fields">
-    Enter the hotel's `nombre`, `location`, and `description`. All three are required — the submit button stays disabled until they are populated.
+  <Step title="Completa los campos obligatorios">
+    Ingresa el `nombre`, `location` y `description` del hotel. Los tres son obligatorios — el botón de envío permanece deshabilitado hasta que estén completados.
   </Step>
-  <Step title="Optionally set image and rating">
-    Paste an image URL into the **URL de la imagen** field. Leave it blank to use the default image. Adjust the `rating` field (1–5, accepts one decimal place).
+  <Step title="Opcionalmente configura la imagen y la calificación">
+    Pega una URL de imagen en el campo **URL de la imagen**. Déjalo en blanco para usar la imagen predeterminada. Ajusta el campo `rating` (1–5, acepta un decimal).
   </Step>
-  <Step title="Add amenities">
-    Type each amenity into the amenities input and click the **+** button (or press Enter). Added amenities appear as removable badges below the input. Click a badge to remove it.
+  <Step title="Agrega servicios">
+    Escribe cada servicio en el campo de servicios y haz clic en el botón **\+** (o presiona Enter). Los servicios añadidos aparecen como insignias removibles debajo del campo. Haz clic en una insignia para eliminarla.
 
     ```json
     ["WiFi", "Piscina", "Gym", "Spa", "Restaurante 24/7", "Servicio de habitaciones"]
     ```
   </Step>
-  <Step title="Submit the form">
-    Click **Agregar Hotel**. The backend `POST /hotels` endpoint is called with `authMiddleware` and `adminMiddleware` enforcing the admin role. On success the new hotel appears immediately in the list.
+  <Step title="Envía el formulario">
+    Haz clic en **Agregar Hotel**. Se llama al endpoint del backend `POST /hotels` con `authMiddleware` y `adminMiddleware` aplicando el rol de administrador. Al tener éxito, el nuevo hotel aparece inmediatamente en la lista.
   </Step>
 </Steps>
 
-## Updating a hotel
+## Actualizar un hotel
 
 <Steps>
-  <Step title="Locate the hotel">
-    Use the search bar to filter hotels by name, location, or description text.
+  <Step title="Localiza el hotel">
+    Usa la barra de búsqueda para filtrar hoteles por nombre, ubicación o texto de descripción.
   </Step>
-  <Step title="Open the edit dialog">
-    Click the **Editar** button on the hotel card. The same form dialog opens pre-populated with the existing values, and the title changes to **Editar Hotel**.
+  <Step title="Abre el diálogo de edición">
+    Haz clic en el botón **Editar** de la tarjeta del hotel. Se abre el mismo diálogo de formulario pre-poblado con los valores existentes, y el título cambia a **Editar Hotel**.
   </Step>
-  <Step title="Modify fields and save">
-    Update any fields as needed. Click **Actualizar Hotel** to submit. The backend `PUT /hotels/:idHotel` endpoint updates the record and sets `updatedAt` to the current timestamp.
+  <Step title="Modifica los campos y guarda">
+    Actualiza cualquier campo según sea necesario. Haz clic en **Actualizar Hotel** para enviar. El endpoint del backend `PUT /hotels/:idHotel` actualiza el registro y establece `updatedAt` con la marca de tiempo actual.
   </Step>
 </Steps>
 
-## Deleting a hotel
+## Eliminar un hotel
 
-Click the **Eliminar** button on a hotel card. A browser confirmation dialog appears asking `¿Estás seguro de que deseas eliminar este hotel?`. Confirming sends a `DELETE /hotels/:idHotel` request. The hotel is removed from the list immediately on success.
+Haz clic en el botón **Eliminar** de la tarjeta de un hotel. Aparece un diálogo de confirmación del navegador preguntando `¿Estás seguro de que deseas eliminar este hotel?`. Al confirmar, se envía una solicitud `DELETE /hotels/:idHotel`. El hotel se elimina de la lista inmediatamente al tener éxito.
 
 <Warning>
-  Deleting a hotel is irreversible. Ensure all associated rooms and active bookings have been handled before proceeding.
+  Eliminar un hotel es irreversible. Asegúrate de que todas las habitaciones asociadas y las reservas activas hayan sido gestionadas antes de proceder.
 </Warning>
 
-## Room management
+## Gestión de habitaciones
 
-Rooms are linked to a hotel via the `hotelId` foreign key. They are managed through the `/rooms` API and surfaced in the housekeeping dashboard for status updates.
+Las habitaciones están vinculadas a un hotel mediante la clave foránea `hotelId`. Se gestionan a través de la API `/rooms` y se muestran en el panel de housekeeping para la actualización de estados.
 
-### Room fields
+### Campos de la habitación
 
 <CardGroup cols={2}>
   <Card title="name" icon="door-open">
-    The room display name (e.g. `Suite Presidencial`). Required.
+    El nombre visible de la habitación (ej. `Suite Presidencial`). Obligatorio.
   </Card>
+
   <Card title="type" icon="layer-group">
-    The room category. Common values used in the application: `standard`, `deluxe`, `suite`, `Doble`. Stored as free-text — no enforced enum at the database level.
+    La categoría de la habitación. Valores comunes usados en la aplicación: `standard`, `deluxe`, `suite`, `Doble`. Almacenado como texto libre — no hay un enum forzado a nivel de base de datos.
   </Card>
+
   <Card title="price" icon="dollar-sign">
-    Price per night in USD. Stored as a `REAL` column. Surfaced as `totalPrice` on bookings.
+    Precio por noche en USD. Almacenado como columna `REAL`. Se muestra como `totalPrice` en las reservas.
   </Card>
+
   <Card title="capacity" icon="users">
-    Maximum number of guests the room can accommodate. Integer. Checked at booking time against the requested `guests` count.
+    Número máximo de huéspedes que la habitación puede alojar. Entero. Se verifica en el momento de la reserva contra el conteo de `guests` solicitado.
   </Card>
+
   <Card title="image" icon="image">
-    URL of the room's cover photo. Required by the database schema (`NOT NULL`).
+    URL de la foto de portada de la habitación. Obligatorio según el esquema de la base de datos (`NOT NULL`).
   </Card>
+
   <Card title="amenities" icon="list">
-    A JSON array of in-room services (e.g. `["Cama King", "WiFi"]`). Serialized to `TEXT` in the database and parsed back to an array on retrieval.
+    Un array JSON de servicios en la habitación (ej. `["Cama King", "WiFi"]`). Serializado como `TEXT` en la base de datos y parseado de vuelta a un array al recuperarlo.
   </Card>
+
   <Card title="available" icon="check-circle">
-    Integer stock count representing how many units of this room type are available. Defaults to `1`.
+    Conteo de stock en entero que representa cuántas unidades de este tipo de habitación están disponibles. Por defecto es `1`.
   </Card>
+
   <Card title="status" icon="circle">
-    Current operational status of the room. See the status table below.
+    Estado operativo actual de la habitación. Consulta la tabla de estados a continuación.
   </Card>
 </CardGroup>
 
-### Room statuses
+### Estados de la habitación
 
-| Status | Description |
-|--------|-------------|
-| `available` | Room is clean and ready to accept new bookings. Guests can book and staff can check in. |
-| `maintenance` | Room is out of service for repairs. Bookings and check-ins are blocked. |
-| `booked` | Room has an active or upcoming reservation. Used in the database documentation to indicate occupancy. |
-| `occupied` | Room currently has a checked-in guest (used by housekeeping runtime state). |
-| `cleaning` | Room is undergoing post-checkout cleaning before it can be re-booked. |
+| Estado | Descripción |
+| --- | --- |
+| `available` | La habitación está limpia y lista para aceptar nuevas reservas. Los huéspedes pueden reservar y el personal puede hacer el check-in. |
+| `maintenance` | La habitación está fuera de servicio por reparaciones. Las reservas y los check-ins están bloqueados. |
+| `booked` | La habitación tiene una reserva activa o próxima. Se usa en la documentación de la base de datos para indicar ocupación. |
+| `occupied` | La habitación tiene actualmente un huésped con check-in (estado operativo en tiempo real utilizado por housekeeping). |
+| `cleaning` | La habitación está siendo limpiada tras el checkout antes de poder ser re-reservada. |
 
 <Note>
-  The `available` and `maintenance` statuses are defined in the `rooms` database table (`DEFAULT 'available'`). The housekeeping panel extends this with `occupied` and `cleaning` as real-time operational states.
+  Los estados `available` y `maintenance` están definidos en la tabla `rooms` de la base de datos (`DEFAULT 'available'`). El panel de housekeeping los extiende con `occupied` y `cleaning` como estados operativos en tiempo real.
 </Note>
 
-### Adding a room to a hotel
+### Agregar una habitación a un hotel
 
-Rooms can be added directly from the housekeeping panel at `/housekeeping`. The **Añadir habitación** form accepts `hotelId`, `name`, `type`, `price`, `capacity`, and `available` count. The room is assigned `status: 'available'` by default.
+Las habitaciones pueden añadirse directamente desde el panel de housekeeping en `/housekeeping`. El formulario **Añadir habitación** acepta `hotelId`, `name`, `type`, `price`, `capacity` y el conteo de `available`. La habitación se asigna con `status: 'available'` por defecto.
 
-Via the API, send a `POST /rooms` request with admin credentials:
+A través de la API, envía una solicitud `POST /rooms` con credenciales de administrador:
 
 ```json
 {

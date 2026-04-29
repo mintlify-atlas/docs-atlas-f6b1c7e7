@@ -1,111 +1,115 @@
 ---
-title: "Manage Your ViniHotel Account Profile"
-description: "View and update your personal information, understand user roles, review booking history, and manage invoices from your ViniHotel profile page."
+title: "Gestionar Tu Perfil de Cuenta en ViniHotel"
+description: "Consulta y actualiza tu información personal, comprende los roles de usuario, revisa el historial de reservas y gestiona tus facturas desde tu página de perfil en ViniHotel."
 ---
 
-Your profile page at `/profile` is the central place to keep your personal details up to date, review past reservations, and access invoices. Profile data is stored in the backend database and retrieved via the `GET /api/auth/me` endpoint using your JWT token.
+Tu página de perfil en `/profile` es el lugar central para mantener tus datos personales actualizados, revisar reservas pasadas y acceder a las facturas. Los datos del perfil se almacenan en la base de datos del backend y se recuperan a través del endpoint `GET /api/auth/me` usando tu token JWT.
 
 <Info>
-  The profile page requires authentication. Unauthenticated users are redirected to `/login`.
+  La página de perfil requiere autenticación. Los usuarios no autenticados son redirigidos a `/login`.
 </Info>
 
-## Accessing your profile
+## Acceder a tu perfil
 
-Navigate to `/profile` from the main navigation. The page is organized into three tabs:
+Navega a `/profile` desde la navegación principal. La página está organizada en tres pestañas:
 
-- **Datos Personales** — personal information form
-- **Historial de Reservas** — all bookings linked to your account
-- **Facturas** — all invoices linked to your account
+- **Datos Personales** — formulario de información personal
+- **Historial de Reservas** — todas las reservas vinculadas a tu cuenta
+- **Facturas** — todas las facturas vinculadas a tu cuenta
 
-## Profile fields
+## Campos del perfil
 
-The **Datos Personales** tab displays the following fields from the `User` type:
+La pestaña **Datos Personales** muestra los siguientes campos del tipo `User`:
 
-| Field | Description | Editable |
-|---|---|---|
-| `nombre` | First name | Yes |
-| `apellido` | Last name | Yes |
-| `email` | Account email address | No (read-only) |
-| `phone` | Phone number | Yes |
-| `dateOfBirth` | Date of birth | Yes |
-| `nationality` | Nationality | Yes |
-| `documentId` | Government-issued document number | Yes |
-| `address` | Full address | Yes |
+| Campo | Descripción | Editable |
+| --- | --- | --- |
+| `nombre` | Nombre | Sí |
+| `apellido` | Apellido | Sí |
+| `email` | Correo electrónico de la cuenta | No (solo lectura) |
+| `phone` | Número de teléfono | Sí |
+| `dateOfBirth` | Fecha de nacimiento | Sí |
+| `nationality` | Nacionalidad | Sí |
+| `documentId` | Número de documento de identidad | Sí |
+| `address` | Dirección completa | Sí |
 
-The `email` field is read-only after registration. The `rol` (role) cannot be changed by the user. All other fields can be updated via `PUT /api/auth/profile`.
+El campo `email` es de solo lectura después del registro. El `rol` (rol) no puede ser cambiado por el usuario. Todos los demás campos pueden actualizarse mediante `PUT /api/auth/profile`.
 
-## How to update your profile
+## Cómo actualizar tu perfil
 
 <Steps>
-  <Step title="Open the profile page">
-    Navigate to `/profile`. The **Datos Personales** tab is active by default.
+  <Step title="Abre la página de perfil">
+    Navega a `/profile`. La pestaña **Datos Personales** está activa por defecto.
   </Step>
-  <Step title="Enter edit mode">
-    Click **Editar Perfil**. All editable fields become active inputs.
+  <Step title="Entra en modo de edición">
+    Haz clic en **Editar Perfil**. Todos los campos editables se convierten en entradas activas.
   </Step>
-  <Step title="Make your changes">
-    Update any combination of `nombre`, `apellido`, `phone`, `dateOfBirth`, `nationality`, `documentId`, or `address`.
+  <Step title="Realiza tus cambios">
+    Actualiza cualquier combinación de `nombre`, `apellido`, `phone`, `dateOfBirth`, `nationality`, `documentId` o `address`.
   </Step>
-  <Step title="Save">
-    Click **Guardar Cambios**. The changes are sent to `PUT /api/auth/profile` and persisted in the backend database.
+  <Step title="Guarda">
+    Haz clic en **Guardar Cambios**. Los cambios se envían a `PUT /api/auth/profile` y se persisten en la base de datos del backend.
   </Step>
 </Steps>
 
-## User roles
+## Roles de usuario
 
-Every account has a `role` field. The role is assigned at creation time and controls access to administrative features:
+Cada cuenta tiene un campo `role`. El rol se asigna en el momento de la creación y controla el acceso a las funciones administrativas:
 
 <CardGroup cols={3}>
   <Card title="client" icon="user">
-    Default role for all self-registered accounts. Full access to browsing, booking, and profile management.
+    Rol predeterminado para todas las cuentas auto-registradas. Acceso completo a la exploración, reserva y gestión del perfil.
   </Card>
+
   <Card title="staff" icon="users">
-    Hotel staff members. Access to booking management and housekeeping in addition to client routes.
+    Personal del hotel. Acceso a la gestión de reservas y housekeeping además de las rutas de cliente.
   </Card>
+
   <Card title="admin" icon="shield">
-    Administrators. Full access to all pages including hotel management, staff management, and reports.
+    Administradores. Acceso completo a todas las páginas, incluyendo gestión de hoteles, gestión de personal e informes.
   </Card>
 </CardGroup>
 
-The role (`rol`) is stored in the `usuarios` table and encoded in the JWT token. It is enforced both by the frontend `ProtectedRoute` component and by the backend JWT middleware.
+El rol (`rol`) se almacena en la tabla `usuarios` y se codifica en el token JWT. Es aplicado tanto por el componente `ProtectedRoute` del frontend como por el middleware JWT del backend.
 
-## Booking history tab
+## Pestaña de historial de reservas
 
-The **Historial de Reservas** tab lists every booking associated with your email address. Each entry shows:
+La pestaña **Historial de Reservas** lista todas las reservas asociadas a tu correo electrónico. Cada entrada muestra:
 
-- `hotelName` and `roomName`
-- `checkIn` and `checkOut` dates
-- `guests` count
+- `hotelName` y `roomName`
+- Fechas de `checkIn` y `checkOut`
+- Cantidad de `guests`
 - `totalPrice`
-- `status` badge (`confirmed`, `checked-in`, `checked-out`, or `cancelled`)
-- `paymentStatus` label (`paid`, `pending`, or `refunded`)
+- Insignia de `status` (`confirmed`, `checked-in`, `checked-out` o `cancelled`)
+- Etiqueta de `paymentStatus` (`paid`, `pending` o `refunded`)
 
-## Invoices tab
+## Pestaña de facturas
 
-The **Facturas** tab lists all invoices generated for your bookings. Each invoice card shows:
+La pestaña **Facturas** lista todas las facturas generadas para tus reservas. Cada tarjeta de factura muestra:
 
-- Invoice ID (last 8 characters of `id`, uppercased)
-- `hotelName` and `roomName`
+- ID de factura (últimos 8 caracteres del `id`, en mayúsculas)
+- `hotelName` y `roomName`
 - `issuedDate`
-- `total` amount
-- `paymentStatus` badge
+- Monto `total`
+- Insignia de `paymentStatus`
 
-Click **Ver Factura** to open a detail dialog with the full cost breakdown: `subtotal`, `taxes` (16%), `additionalCharges`, and `total`. Use **Descargar PDF** to print the invoice.
+Haz clic en **Ver Factura** para abrir un diálogo de detalle con el desglose completo del costo: `subtotal`, `taxes` (16%), `additionalCharges` y `total`. Usa **Descargar PDF** para imprimir la factura.
 
-## Account security
+## Seguridad de la cuenta
 
 <AccordionGroup>
-  <Accordion title="Password storage">
-    Passwords are hashed with bcrypt on the backend before storage. The plaintext password is never persisted. Avoid reusing passwords from other services.
+  <Accordion title="Almacenamiento de contraseña">
+    Las contraseñas se hashean con bcrypt en el backend antes de almacenarse. La contraseña en texto plano nunca se persiste. Evita reutilizar contraseñas de otros servicios.
   </Accordion>
-  <Accordion title="Session token">
-    After login, the JWT token is stored in `localStorage` under the key `token`. The frontend `apiClient` reads this value on load and attaches it to every authenticated request. Clearing browser storage will log you out.
+
+  <Accordion title="Token de sesión">
+    Después del inicio de sesión, el token JWT se almacena en `localStorage` bajo la clave `token`. El `apiClient` del frontend lee este valor al cargar y lo adjunta a cada solicitud autenticada. Borrar el almacenamiento del navegador cerrará tu sesión.
   </Accordion>
-  <Accordion title="Logging out">
-    Logging out calls `apiClient.clearToken()` from `AuthContext`, which removes the token from `localStorage` and clears the in-memory user state. You are immediately redirected away from any protected routes.
+
+  <Accordion title="Cerrar sesión">
+    Cerrar sesión llama a `apiClient.clearToken()` desde `AuthContext`, lo que elimina el token de `localStorage` y borra el estado de usuario en memoria. Serás redirigido inmediatamente fuera de cualquier ruta protegida.
   </Accordion>
 </AccordionGroup>
 
 <Note>
-  Registered accounts default to the `client` role. Role upgrades to `staff` or `admin` require a direct database change — there is no self-service role change in the current UI.
+  Las cuentas registradas tienen el rol `client` por defecto. Las actualizaciones de rol a `staff` o `admin` requieren un cambio directo en la base de datos — no existe un cambio de rol de autoservicio en la interfaz actual.
 </Note>

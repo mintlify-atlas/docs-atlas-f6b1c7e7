@@ -1,79 +1,93 @@
 ---
-title: "Bookings API — Create and Manage Reservations"
-description: "Reference for ViniHotel booking endpoints: create reservations, view history, update status, cancel stays, and list all bookings for staff and admins."
+title: "Bookings API — Crear y Gestionar Reservas"
+description: "Referencia para los endpoints de reservas de ViniHotel: crear reservas, ver historial, actualizar estado, cancelar estadías y listar todas las reservas para personal y administradores."
 ---
 
-The Bookings API handles the full reservation lifecycle in ViniHotel. Guests can create bookings without authentication but must authenticate to view their booking history. Before creating a booking the server automatically calls the availability check to prevent double-booking and capacity violations.
+La Bookings API gestiona el ciclo de vida completo de las reservas en ViniHotel. Los huéspedes pueden crear reservas sin autenticación, pero deben autenticarse para ver su historial de reservas. Antes de crear una reserva, el servidor llama automáticamente a la verificación de disponibilidad para evitar reservas duplicadas y violaciones de capacidad.
 
 <Note>
-  Protected endpoints require an `Authorization: Bearer <token>` header. The token is obtained from the `/api/auth/login` endpoint.
+  Los endpoints protegidos requieren un header `Authorization: Bearer <token>`. El token se obtiene desde el endpoint `/api/auth/login`.
 </Note>
 
 ---
 
 ## GET /api/bookings/my-bookings
 
-Returns all bookings for the currently authenticated user. Requires authentication.
+Devuelve todas las reservas del usuario autenticado actualmente. Requiere autenticación.
 
-The server resolves the calling user's `idCliente` from the JWT and returns only their bookings, joined with room and hotel details.
+El servidor resuelve el `idCliente` del usuario que realiza la llamada desde el JWT y devuelve únicamente sus reservas, combinadas con detalles de habitación y hotel.
 
 ### Headers
 
 <ParamField header="Authorization" type="string" required>
-  `Bearer <token>` — JWT obtained on login.
+  `Bearer <token>` — JWT obtenido al iniciar sesión.
 </ParamField>
 
-### Response
+### Respuesta
 
 <ResponseField name="[]" type="object[]">
-  Array of booking objects for the authenticated user.
-  <Expandable title="booking object properties">
+  Array de objetos reserva del usuario autenticado.
+
+  <Expandable title="propiedades del objeto reserva">
     <ResponseField name="id" type="string" required>
-      UUID of the booking.
+      UUID de la reserva.
     </ResponseField>
+
     <ResponseField name="roomId" type="string" required>
-      UUID of the reserved room.
+      UUID de la habitación reservada.
     </ResponseField>
+
     <ResponseField name="idCliente" type="integer" required>
-      ID of the client who made the booking.
+      ID del cliente que realizó la reserva.
     </ResponseField>
+
     <ResponseField name="checkIn" type="string" required>
-      Check-in date in `YYYY-MM-DD` format.
+      Fecha de check-in en formato `YYYY-MM-DD`.
     </ResponseField>
+
     <ResponseField name="checkOut" type="string" required>
-      Check-out date in `YYYY-MM-DD` format.
+      Fecha de check-out en formato `YYYY-MM-DD`.
     </ResponseField>
+
     <ResponseField name="numberOfGuests" type="integer" required>
-      Number of guests in the reservation.
+      Número de huéspedes en la reserva.
     </ResponseField>
+
     <ResponseField name="totalPrice" type="number" required>
-      Total price in USD.
+      Precio total en USD.
     </ResponseField>
+
     <ResponseField name="status" type="string" required>
-      Booking status: `confirmed`, `checked-in`, `checked-out`, or `cancelled`.
+      Estado de la reserva: `confirmed`, `checked-in`, `checked-out`, o `cancelled`.
     </ResponseField>
+
     <ResponseField name="paymentStatus" type="string" required>
-      Payment status: `pending`, `paid`, or `refunded`.
+      Estado del pago: `pending`, `paid`, o `refunded`.
     </ResponseField>
+
     <ResponseField name="roomName" type="string">
-      Name of the reserved room (joined).
+      Nombre de la habitación reservada (combinado).
     </ResponseField>
+
     <ResponseField name="type" type="string">
-      Room type (joined).
+      Tipo de habitación (combinado).
     </ResponseField>
+
     <ResponseField name="price" type="number">
-      Room's per-night price (joined).
+      Precio por noche de la habitación (combinado).
     </ResponseField>
+
     <ResponseField name="hotelName" type="string">
-      Name of the hotel (joined).
+      Nombre del hotel (combinado).
     </ResponseField>
+
     <ResponseField name="location" type="string">
-      Hotel location (joined).
+      Ubicación del hotel (combinado).
     </ResponseField>
   </Expandable>
 </ResponseField>
 
-### Example
+### Ejemplo
 
 ```bash
 curl http://localhost:5000/api/bookings/my-bookings \
@@ -105,57 +119,69 @@ curl http://localhost:5000/api/bookings/my-bookings \
 
 ## GET /api/bookings/:id
 
-Returns a single booking by its UUID, joined with room, hotel, and user details. Requires authentication.
+Devuelve una única reserva por su UUID, combinada con detalles de habitación, hotel y usuario. Requiere autenticación.
 
-### Path parameters
+### Parámetros de ruta
 
 <ParamField path="id" type="string" required>
-  UUID of the booking to retrieve.
+  UUID de la reserva a obtener.
 </ParamField>
 
-### Response
+### Respuesta
 
 <ResponseField name="id" type="string" required>
-  UUID of the booking.
-</ResponseField>
-<ResponseField name="roomId" type="string" required>
-  UUID of the reserved room.
-</ResponseField>
-<ResponseField name="idCliente" type="integer" required>
-  ID of the client.
-</ResponseField>
-<ResponseField name="checkIn" type="string" required>
-  Check-in date.
-</ResponseField>
-<ResponseField name="checkOut" type="string" required>
-  Check-out date.
-</ResponseField>
-<ResponseField name="numberOfGuests" type="integer" required>
-  Number of guests.
-</ResponseField>
-<ResponseField name="totalPrice" type="number" required>
-  Total price in USD.
-</ResponseField>
-<ResponseField name="status" type="string" required>
-  Booking status.
-</ResponseField>
-<ResponseField name="paymentStatus" type="string" required>
-  Payment status.
-</ResponseField>
-<ResponseField name="roomName" type="string">
-  Room name (joined).
-</ResponseField>
-<ResponseField name="hotelId" type="string">
-  UUID of the hotel (joined).
-</ResponseField>
-<ResponseField name="hotelName" type="string">
-  Hotel name (joined).
-</ResponseField>
-<ResponseField name="idUsuario" type="integer">
-  ID of the associated user (joined).
+  UUID de la reserva.
 </ResponseField>
 
-### Example
+<ResponseField name="roomId" type="string" required>
+  UUID de la habitación reservada.
+</ResponseField>
+
+<ResponseField name="idCliente" type="integer" required>
+  ID del cliente.
+</ResponseField>
+
+<ResponseField name="checkIn" type="string" required>
+  Fecha de check-in.
+</ResponseField>
+
+<ResponseField name="checkOut" type="string" required>
+  Fecha de check-out.
+</ResponseField>
+
+<ResponseField name="numberOfGuests" type="integer" required>
+  Número de huéspedes.
+</ResponseField>
+
+<ResponseField name="totalPrice" type="number" required>
+  Precio total en USD.
+</ResponseField>
+
+<ResponseField name="status" type="string" required>
+  Estado de la reserva.
+</ResponseField>
+
+<ResponseField name="paymentStatus" type="string" required>
+  Estado del pago.
+</ResponseField>
+
+<ResponseField name="roomName" type="string">
+  Nombre de la habitación (combinado).
+</ResponseField>
+
+<ResponseField name="hotelId" type="string">
+  UUID del hotel (combinado).
+</ResponseField>
+
+<ResponseField name="hotelName" type="string">
+  Nombre del hotel (combinado).
+</ResponseField>
+
+<ResponseField name="idUsuario" type="integer">
+  ID del usuario asociado (combinado).
+</ResponseField>
+
+### Ejemplo
 
 ```bash
 curl http://localhost:5000/api/bookings/booking-uuid-1234 \
@@ -181,67 +207,78 @@ curl http://localhost:5000/api/bookings/booking-uuid-1234 \
 ```
 
 <Warning>
-  Returns `404` with `{ "error": "Reserva no encontrada" }` if no booking exists with the given `id`.
+  Devuelve `404` con `{ "error": "Reserva no encontrada" }` si no existe ninguna reserva con el `id` indicado.
 </Warning>
 
 ---
 
 ## POST /api/bookings
 
-Creates a new booking. Authentication is optional — if a valid JWT is present the booking is linked to the authenticated user's `idCliente`; otherwise `idCliente` is stored as `null`.
+Crea una nueva reserva. La autenticación es opcional — si hay un JWT válido presente, la reserva se vincula al `idCliente` del usuario autenticado; de lo contrario, `idCliente` se almacena como `null`.
 
-The server checks availability before inserting the record. If the room is unavailable (wrong status, over capacity, or overlapping dates), the request is rejected with `400`.
+El servidor verifica la disponibilidad antes de insertar el registro. Si la habitación no está disponible (status incorrecto, exceso de capacidad o fechas superpuestas), la solicitud se rechaza con `400`.
 
 <Note>
-  If `paymentMethod` is `"debit-card"`, the `paymentStatus` is automatically set to `"paid"` regardless of the `paymentStatus` field in the request body.
+  Si `paymentMethod` es `"debit-card"`, el `paymentStatus` se establece automáticamente en `"paid"` independientemente del campo `paymentStatus` en el body de la solicitud.
 </Note>
 
-### Body parameters
+### Parámetros del body
 
 <ParamField body="roomId" type="string" required>
-  UUID of the room to reserve.
-</ParamField>
-<ParamField body="checkIn" type="string" required>
-  Check-in date in `YYYY-MM-DD` format.
-</ParamField>
-<ParamField body="checkOut" type="string" required>
-  Check-out date in `YYYY-MM-DD` format.
-</ParamField>
-<ParamField body="guests" type="integer" required>
-  Number of guests. Must not exceed the room's `capacity`.
-</ParamField>
-<ParamField body="guestName" type="string" required>
-  Full name of the primary guest.
-</ParamField>
-<ParamField body="guestEmail" type="string" required>
-  Email address of the primary guest.
-</ParamField>
-<ParamField body="totalPrice" type="number" required>
-  Total price in USD for the stay.
-</ParamField>
-<ParamField body="paymentMethod" type="string" required>
-  Payment method. One of: `credit_card`, `debit-card`, `paypal`, `twallet`.
-</ParamField>
-<ParamField body="paymentStatus" type="string" default="pending">
-  Initial payment status. Defaults to `"pending"`. Overridden to `"paid"` when `paymentMethod` is `"debit-card"`.
+  UUID de la habitación a reservar.
 </ParamField>
 
-### Response
+<ParamField body="checkIn" type="string" required>
+  Fecha de check-in en formato `YYYY-MM-DD`.
+</ParamField>
+
+<ParamField body="checkOut" type="string" required>
+  Fecha de check-out en formato `YYYY-MM-DD`.
+</ParamField>
+
+<ParamField body="guests" type="integer" required>
+  Número de huéspedes. No debe superar la `capacity` de la habitación.
+</ParamField>
+
+<ParamField body="guestName" type="string" required>
+  Nombre completo del huésped principal.
+</ParamField>
+
+<ParamField body="guestEmail" type="string" required>
+  Correo electrónico del huésped principal.
+</ParamField>
+
+<ParamField body="totalPrice" type="number" required>
+  Precio total en USD por la estadía.
+</ParamField>
+
+<ParamField body="paymentMethod" type="string" required>
+  Método de pago. Uno de: `credit_card`, `debit-card`, `paypal`, `twallet`.
+</ParamField>
+
+<ParamField body="paymentStatus" default="pending" type="string">
+  Estado de pago inicial. Por defecto es `"pending"`. Se sobreescribe a `"paid"` cuando `paymentMethod` es `"debit-card"`.
+</ParamField>
+
+### Respuesta
 
 <ResponseField name="message" type="string" required>
-  Confirmation: `"Reserva creada exitosamente"`.
-</ResponseField>
-<ResponseField name="id" type="string" required>
-  UUID of the newly created booking.
-</ResponseField>
-<ResponseField name="bookingId" type="string" required>
-  Same as `id`. Provided for convenience.
-</ResponseField>
-<ResponseField name="paymentStatus" type="string" required>
-  Final payment status after processing: `"pending"` or `"paid"`.
+  Confirmación: `"Reserva creada exitosamente"`.
 </ResponseField>
 
-### Example
+<ResponseField name="id" type="string" required>
+  UUID de la reserva recién creada.
+</ResponseField>
+
+<ResponseField name="bookingId" type="string" required>
+  Igual que `id`. Proporcionado por conveniencia.
+</ResponseField>
+
+<ResponseField name="paymentStatus" type="string" required>
+  Estado de pago final tras el procesamiento: `"pending"` o `"paid"`.
+</ResponseField>
+
+### Ejemplo
 
 ```bash
 curl -X POST http://localhost:5000/api/bookings \
@@ -272,37 +309,39 @@ curl -X POST http://localhost:5000/api/bookings \
 
 ## PUT /api/bookings/:id
 
-Updates the status or payment status of a booking. Requires authentication.
+Actualiza el estado o el estado de pago de una reserva. Requiere autenticación.
 
-### Path parameters
+### Parámetros de ruta
 
 <ParamField path="id" type="string" required>
-  UUID of the booking to update.
+  UUID de la reserva a actualizar.
 </ParamField>
 
-### Body parameters
+### Parámetros del body
 
 <ParamField body="status" type="string">
-  New booking status. One of: `confirmed`, `checked-in`, `checked-out`, `cancelled`.
+  Nuevo estado de la reserva. Uno de: `confirmed`, `checked-in`, `checked-out`, `cancelled`.
 </ParamField>
+
 <ParamField body="paymentStatus" type="string">
-  New payment status. One of: `pending`, `paid`, `refunded`.
+  Nuevo estado de pago. Uno de: `pending`, `paid`, `refunded`.
 </ParamField>
+
 <ParamField body="totalPrice" type="number">
-  Updated total price in USD if the booking amount changes.
+  Precio total actualizado en USD si el monto de la reserva cambia.
 </ParamField>
 
 <Note>
-  Only `status`, `paymentStatus`, and `totalPrice` are updatable via this endpoint. Other booking fields (room, dates, guests) cannot be changed after creation.
+  Solo `status`, `paymentStatus` y `totalPrice` son actualizables mediante este endpoint. Los demás campos de la reserva (habitación, fechas, huéspedes) no pueden modificarse después de la creación.
 </Note>
 
-### Response
+### Respuesta
 
 <ResponseField name="message" type="string" required>
-  Confirmation: `"Reserva actualizada exitosamente"`.
+  Confirmación: `"Reserva actualizada exitosamente"`.
 </ResponseField>
 
-### Example
+### Ejemplo
 
 ```bash
 curl -X PUT http://localhost:5000/api/bookings/booking-uuid-1234 \
@@ -321,25 +360,25 @@ curl -X PUT http://localhost:5000/api/bookings/booking-uuid-1234 \
 
 ## POST /api/bookings/:id/cancel
 
-Cancels a booking by setting its `status` to `"cancelled"` and `paymentStatus` to `"refunded"`. Requires authentication.
+Cancela una reserva estableciendo su `status` en `"cancelled"` y `paymentStatus` en `"refunded"`. Requiere autenticación.
 
 <Note>
-  Cancellation automatically sets `paymentStatus` to `"refunded"`. No additional request body is needed.
+  La cancelación establece automáticamente `paymentStatus` en `"refunded"`. No se necesita body adicional en la solicitud.
 </Note>
 
-### Path parameters
+### Parámetros de ruta
 
 <ParamField path="id" type="string" required>
-  UUID of the booking to cancel.
+  UUID de la reserva a cancelar.
 </ParamField>
 
-### Response
+### Respuesta
 
 <ResponseField name="message" type="string" required>
-  Confirmation: `"Reserva cancelada exitosamente"`.
+  Confirmación: `"Reserva cancelada exitosamente"`.
 </ResponseField>
 
-### Example
+### Ejemplo
 
 ```bash
 curl -X POST http://localhost:5000/api/bookings/booking-uuid-1234/cancel \
@@ -356,57 +395,69 @@ curl -X POST http://localhost:5000/api/bookings/booking-uuid-1234/cancel \
 
 ## GET /api/bookings
 
-Returns all bookings across all users, joined with room, hotel, and guest email. Intended for admin and staff users.
+Devuelve todas las reservas de todos los usuarios, combinadas con detalles de habitación, hotel y correo del huésped. Destinado a usuarios administradores y personal.
 
 <Warning>
-  This endpoint returns data for every booking in the system. In production, restrict access to users with `rol: "admin"` or `rol: "staff"` at the middleware level.
+  Este endpoint devuelve datos de todas las reservas del sistema. En producción, restringe el acceso a usuarios con `rol: "admin"` o `rol: "staff"` a nivel de middleware.
 </Warning>
 
-### Response
+### Respuesta
 
 <ResponseField name="[]" type="object[]">
-  Array of all booking objects.
-  <Expandable title="booking object properties">
+  Array de todos los objetos reserva.
+
+  <Expandable title="propiedades del objeto reserva">
     <ResponseField name="id" type="string" required>
-      UUID of the booking.
+      UUID de la reserva.
     </ResponseField>
+
     <ResponseField name="roomId" type="string" required>
-      UUID of the reserved room.
+      UUID de la habitación reservada.
     </ResponseField>
+
     <ResponseField name="idCliente" type="integer" required>
-      ID of the client.
+      ID del cliente.
     </ResponseField>
+
     <ResponseField name="checkIn" type="string" required>
-      Check-in date.
+      Fecha de check-in.
     </ResponseField>
+
     <ResponseField name="checkOut" type="string" required>
-      Check-out date.
+      Fecha de check-out.
     </ResponseField>
+
     <ResponseField name="numberOfGuests" type="integer" required>
-      Number of guests.
+      Número de huéspedes.
     </ResponseField>
+
     <ResponseField name="totalPrice" type="number" required>
-      Total price in USD.
+      Precio total en USD.
     </ResponseField>
+
     <ResponseField name="status" type="string" required>
-      Booking status.
+      Estado de la reserva.
     </ResponseField>
+
     <ResponseField name="paymentStatus" type="string" required>
-      Payment status.
+      Estado del pago.
     </ResponseField>
+
     <ResponseField name="roomName" type="string">
-      Room name (joined).
+      Nombre de la habitación (combinado).
     </ResponseField>
+
     <ResponseField name="hotelName" type="string">
-      Hotel name (joined).
+      Nombre del hotel (combinado).
     </ResponseField>
+
     <ResponseField name="email" type="string">
-      Guest email address (joined from `usuarios`).
+      Correo electrónico del huésped (combinado desde `usuarios`).
     </ResponseField>
   </Expandable>
 </ResponseField>
 
-### Example
+### Ejemplo
 
 ```bash
 curl http://localhost:5000/api/bookings \
@@ -434,32 +485,32 @@ curl http://localhost:5000/api/bookings \
 
 ---
 
-## Booking statuses
+## Estados de reserva
 
-| Status | Description |
-|--------|-------------|
-| `confirmed` | Booking created and accepted. Default on creation. |
-| `checked-in` | Guest has arrived at the hotel. |
-| `checked-out` | Guest has completed their stay. |
-| `cancelled` | Booking was cancelled; payment set to `refunded`. |
+| Estado | Descripción |
+| --- | --- |
+| `confirmed` | Reserva creada y aceptada. Por defecto al crear. |
+| `checked-in` | El huésped ha llegado al hotel. |
+| `checked-out` | El huésped ha completado su estadía. |
+| `cancelled` | La reserva fue cancelada; el pago se establece en `refunded`. |
 
-## Payment statuses
+## Estados de pago
 
-| Status | Description |
-|--------|-------------|
-| `pending` | Payment has not been collected yet. Default. |
-| `paid` | Payment received. Auto-set for `debit-card` bookings. |
-| `refunded` | Payment returned to guest. Set automatically on cancellation. |
+| Estado | Descripción |
+| --- | --- |
+| `pending` | El pago aún no ha sido cobrado. Por defecto. |
+| `paid` | Pago recibido. Se establece automáticamente para reservas con `debit-card`. |
+| `refunded` | Pago devuelto al huésped. Se establece automáticamente al cancelar. |
 
-## Payment methods
+## Métodos de pago
 
-| Value | Description |
-|-------|-------------|
-| `credit_card` | Credit card. Payment status stays `pending` until manually updated. |
-| `debit-card` | Debit card. Payment status is automatically set to `paid` on booking creation. |
-| `paypal` | PayPal. Payment status stays `pending`. |
-| `twallet` | T-Wallet digital payment. Payment status stays `pending`. |
+| Valor | Descripción |
+| --- | --- |
+| `credit_card` | Tarjeta de crédito. El estado de pago permanece en `pending` hasta actualizarse manualmente. |
+| `debit-card` | Tarjeta de débito. El estado de pago se establece automáticamente en `paid` al crear la reserva. |
+| `paypal` | PayPal. El estado de pago permanece en `pending`. |
+| `twallet` | Pago digital T-Wallet. El estado de pago permanece en `pending`. |
 
 <Note>
-  The `debit-card` value uses a hyphen, not an underscore. Using `paymentMethod: "debit-card"` is the only way to have the booking's `paymentStatus` automatically set to `"paid"` at creation time.
+  El valor `debit-card` usa un guion, no un guion bajo. Usar `paymentMethod: "debit-card"` es la única forma de tener el `paymentStatus` de la reserva establecido automáticamente en `"paid"` al momento de la creación.
 </Note>

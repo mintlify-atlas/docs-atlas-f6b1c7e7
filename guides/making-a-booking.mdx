@@ -1,101 +1,101 @@
 ---
-title: "Make a Hotel Room Reservation"
-description: "Walk through the end-to-end booking flow in ViniHotel, from selecting a room to receiving confirmation and an auto-generated invoice."
+title: "Hacer una Reserva de Habitación de Hotel"
+description: "Recorre el flujo de reserva de principio a fin en ViniHotel, desde seleccionar una habitación hasta recibir la confirmación y una factura generada automáticamente."
 ---
 
-Reserving a room in ViniHotel takes you through four pages: hotel detail, a booking dialog, the payment page, and the confirmation screen. The entire flow is covered in this guide from prerequisites through what happens after you confirm.
+Reservar una habitación en ViniHotel te lleva a través de cuatro páginas: detalle del hotel, un diálogo de reserva, la página de pago y la pantalla de confirmación. Esta guía cubre el flujo completo desde los requisitos previos hasta lo que ocurre después de confirmar.
 
-## Prerequisites
+## Requisitos previos
 
 <Warning>
-  You must be logged in before you can view hotel details or make a reservation. Unauthenticated users are redirected to `/login`. If you do not have an account, register at `/register` first — new accounts are automatically signed in after registration.
+  Debes haber iniciado sesión antes de poder ver los detalles del hotel o hacer una reserva. Los usuarios no autenticados son redirigidos a `/login`. Si no tienes una cuenta, regístrate en `/register` primero — las cuentas nuevas inician sesión automáticamente después del registro.
 </Warning>
 
-## Booking flow
+## Flujo de reserva
 
 <Steps>
-  <Step title="Browse to a hotel">
-    Go to the home page at `/` and find a hotel. Use the search box, filters, or sort order to narrow the list. Click **Ver detalles** or the hotel image to open the hotel detail page.
+  <Step title="Navega a un hotel">
+    Ve a la página principal en `/` y encuentra un hotel. Usa el cuadro de búsqueda, los filtros o el orden de clasificación para reducir la lista. Haz clic en **Ver detalles** o en la imagen del hotel para abrir la página de detalle.
 
-    For a full walkthrough of the listing and filtering features, see [Browse and search hotels](/guides/browsing-hotels).
+    Para un recorrido completo de las funciones de listado y filtrado, consulta [Explorar y buscar hoteles](/guides/browsing-hotels).
   </Step>
-  <Step title="Select a room">
-    On the hotel detail page (`/hotel/:id`), scroll to **Habitaciones Disponibles**. Each room card shows the `type`, `capacity`, `price` per night, and available unit count. Click **Reservar Ahora** on the room you want. Rooms with `available === 0` or a status of `cleaning`, `maintenance`, or `unavailable` cannot be selected.
+  <Step title="Selecciona una habitación">
+    En la página de detalle del hotel (`/hotel/:id`), desplázate hasta **Habitaciones Disponibles**. Cada tarjeta de habitación muestra el `type`, `capacity`, `price` por noche y el número de unidades disponibles. Haz clic en **Reservar Ahora** en la habitación que desees. Las habitaciones con `available === 0` o un estado de `cleaning`, `maintenance` o `unavailable` no pueden seleccionarse.
   </Step>
-  <Step title="Choose check-in and check-out dates">
-    A dialog opens for that room. Select your **Fecha de entrada** (`checkIn`) and **Fecha de salida** (`checkOut`). The check-out date must be after the check-in date. Both dates are required — the confirm button stays disabled until valid dates are provided.
+  <Step title="Elige las fechas de entrada y salida">
+    Se abre un diálogo para esa habitación. Selecciona tu **Fecha de entrada** (`checkIn`) y **Fecha de salida** (`checkOut`). La fecha de salida debe ser posterior a la fecha de entrada. Ambas fechas son obligatorias — el botón de confirmar permanece deshabilitado hasta que se proporcionen fechas válidas.
 
-    Once both dates are set, the dialog shows a live cost preview:
+    Una vez establecidas ambas fechas, el diálogo muestra una vista previa del costo en tiempo real:
 
     ```text
     N noche(s) × $price = $totalPrice
     ```
   </Step>
-  <Step title="Specify the number of guests">
-    Enter the number of guests in the **Número de huéspedes** field. The value must be between 1 and the room's `capacity`. Exceeding the capacity blocks the booking with an alert.
+  <Step title="Especifica el número de huéspedes">
+    Ingresa el número de huéspedes en el campo **Número de huéspedes**. El valor debe estar entre 1 y la `capacity` de la habitación. Superar la capacidad bloqueará la reserva con una alerta.
   </Step>
-  <Step title="Confirm guest details">
-    Review or update the **Nombre completo** (`guestName`) and **Email** (`guestEmail`) fields. These are pre-filled from your logged-in user profile. All four fields — dates, guests, name, and email — must be filled before **Confirmar Reserva** becomes active.
+  <Step title="Confirma los datos del huésped">
+    Revisa o actualiza los campos **Nombre completo** (`guestName`) y **Email** (`guestEmail`). Estos se rellenan previamente con los datos de tu perfil de usuario. Los cuatro campos — fechas, huéspedes, nombre y correo electrónico — deben estar completados antes de que **Confirmar Reserva** se active.
   </Step>
-  <Step title="Select a payment method and review the summary">
-    After clicking **Confirmar Reserva**, you are taken to the payment page (`/payment`). The left panel shows a booking summary:
+  <Step title="Selecciona un método de pago y revisa el resumen">
+    Después de hacer clic en **Confirmar Reserva**, serás llevado a la página de pago (`/payment`). El panel izquierdo muestra un resumen de la reserva:
 
-    | Field | Value |
-    |---|---|
-    | Hotel & room | `hotelName` / `roomName` |
-    | Check-in | `checkIn` |
-    | Check-out | `checkOut` |
-    | Guests | `guests` |
+    | Campo | Valor |
+    | --- | --- |
+    | Hotel y habitación | `hotelName` / `roomName` |
+    | Entrada | `checkIn` |
+    | Salida | `checkOut` |
+    | Huéspedes | `guests` |
     | Subtotal | `totalPrice` |
-    | Taxes (16%) | `totalPrice × 0.16` |
+    | Impuestos (16%) | `totalPrice × 0.16` |
     | **Total** | `totalPrice × 1.16` |
 
-    Choose a payment method:
+    Elige un método de pago:
 
-    - **credit_card** — credit card payment
-    - **debit-card** — debit card; payment status is automatically set to `paid`
-    - **paypal** — PayPal payment
-    - **twallet** — T-Wallet digital payment
+    - **credit\_card** — pago con tarjeta de crédito
+    - **debit-card** — tarjeta de débito; el estado del pago se establece automáticamente en `paid`
+    - **paypal** — pago con PayPal
+    - **twallet** — pago digital T-Wallet
 
-    Accept the terms and conditions checkbox, then click **Confirmar y Pagar**.
+    Acepta la casilla de términos y condiciones, luego haz clic en **Confirmar y Pagar**.
   </Step>
-  <Step title="Receive booking confirmation">
-    A successful payment sends you to `/booking-confirmation`. The page displays a confirmation number and all booking details: hotel, room, dates, guest count, guest name, email, and total paid. Confirmation details are also emailed to `guestEmail`.
+  <Step title="Recibe la confirmación de la reserva">
+    Un pago exitoso te lleva a `/booking-confirmation`. La página muestra un número de confirmación y todos los detalles de la reserva: hotel, habitación, fechas, número de huéspedes, nombre del huésped, correo electrónico y total pagado. Los detalles de confirmación también se envían por correo a `guestEmail`.
 
-    Use the **Ver Mis Reservas** button to navigate to `/my-bookings`, or **Imprimir** to print the page.
+    Usa el botón **Ver Mis Reservas** para navegar a `/my-bookings`, o **Imprimir** para imprimir la página.
   </Step>
 </Steps>
 
-## What happens after confirmation
+## Qué ocurre después de la confirmación
 
-When a booking is created, the `BookingContext` sets the following initial field values:
+Cuando se crea una reserva, el `BookingContext` establece los siguientes valores de campo iniciales:
 
-| Field | Initial value |
-|---|---|
+| Campo | Valor inicial |
+| --- | --- |
 | `status` | `confirmed` |
-| `paymentStatus` | `paid` (debit card) or `pending` (transfer / QR) |
-| `createdAt` | Current ISO timestamp |
+| `paymentStatus` | `paid` (tarjeta de débito) o `pending` (transferencia / QR) |
+| `createdAt` | Marca de tiempo ISO actual |
 
-### Booking statuses
+### Estados de la reserva
 
-| Status | Meaning |
-|---|---|
-| `confirmed` | Reservation accepted, awaiting check-in |
-| `checked-in` | Guest has checked in; room is `occupied` |
-| `checked-out` | Guest has completed their stay; room moves to `cleaning` |
-| `cancelled` | Booking was cancelled; payment moves to `refunded` |
+| Estado | Significado |
+| --- | --- |
+| `confirmed` | Reserva aceptada, en espera del check-in |
+| `checked-in` | El huésped ha hecho el check-in; la habitación está en `occupied` |
+| `checked-out` | El huésped ha completado su estancia; la habitación pasa a `cleaning` |
+| `cancelled` | La reserva fue cancelada; el pago pasa a `refunded` |
 
-### Payment statuses
+### Estados del pago
 
-| Status | Meaning |
-|---|---|
-| `pending` | Payment not yet received (transfer or QR) |
-| `paid` | Payment confirmed |
-| `refunded` | Payment reversed after cancellation |
+| Estado | Significado |
+| --- | --- |
+| `pending` | Pago aún no recibido (transferencia o QR) |
+| `paid` | Pago confirmado |
+| `refunded` | Pago revertido tras la cancelación |
 
-## Invoice generation
+## Generación de factura
 
-An invoice is created automatically alongside every booking. The `Invoice` record includes:
+Se crea una factura automáticamente junto con cada reserva. El registro `Invoice` incluye:
 
 ```json
 {
@@ -111,6 +111,6 @@ An invoice is created automatically alongside every booking. The `Invoice` recor
 }
 ```
 
-The `additionalCharges` field is a JSON object. It defaults to an empty object `{}` and can contain any extra charge keys such as `resort_fee`, `service_charge`, or `parking`.
+El campo `additionalCharges` es un objeto JSON. Su valor predeterminado es un objeto vacío `{}` y puede contener cualquier clave de cargo adicional como `resort_fee`, `service_charge` o `parking`.
 
-You can view and download invoices from the **Facturas** tab on your profile page at `/profile`.
+Puedes ver y descargar facturas desde la pestaña **Facturas** en tu página de perfil en `/profile`.

@@ -1,68 +1,75 @@
 ---
-title: "ViniHotel: Hotel Booking Platform Overview"
-description: "ViniHotel is a full-stack hotel booking platform built with React, Vite, Node.js, Express, and SQLite for clients, staff, and admins."
+title: "ViniHotel: Descripción general de la plataforma de reservas de hoteles"
+description: "ViniHotel es una plataforma full-stack de reservas de hoteles construida con React, Vite, Node.js, Express y SQLite para clientes, personal y administradores."
 ---
 
-ViniHotel is a full-stack hotel booking platform that lets guests browse hotels, reserve rooms, and manage their bookings — while giving hotel staff and administrators dedicated dashboards to handle operations, housekeeping, and reporting. The frontend is a React 18 single-page application built with Vite, and the backend is a Node.js + Express REST API backed by a SQLite database that is created automatically on first run.
+ViniHotel es una plataforma full-stack de reservas de hoteles que permite a los huéspedes explorar hoteles, reservar habitaciones y gestionar sus reservas — al mismo tiempo que proporciona al personal del hotel y a los administradores paneles dedicados para manejar operaciones, limpieza y reportes. El frontend es una aplicación React 18 de una sola página construida con Vite, y el backend es una API REST de Node.js \+ Express respaldada por una base de datos SQLite que se crea automáticamente en la primera ejecución.
 
-## Key Features
+## Características principales
 
 <CardGroup cols={2}>
-  <Card title="Hotel Browsing & Booking" icon="building">
-    Guests can browse available hotels, view room details, check availability by date range, and complete a booking through a guided payment flow.
+  <Card title="Exploración y reserva de hoteles" icon="building">
+    Los huéspedes pueden explorar hoteles disponibles, ver detalles de habitaciones, consultar disponibilidad por rango de fechas y completar una reserva mediante un flujo de pago guiado.
   </Card>
-  <Card title="My Bookings Dashboard" icon="calendar">
-    Authenticated users can view all their past and upcoming reservations, cancel bookings, and download invoices from a personal dashboard.
+
+  <Card title="Panel de mis reservas" icon="calendar">
+    Los usuarios autenticados pueden ver todas sus reservas pasadas y futuras, cancelar reservas y descargar facturas desde un panel personal.
   </Card>
-  <Card title="Staff Operations" icon="clipboard-list">
-    Staff members access a booking management view and a housekeeping board to track room status and assign cleaning tasks across properties.
+
+  <Card title="Operaciones del personal" icon="clipboard-list">
+    Los miembros del personal acceden a una vista de gestión de reservas y a un panel de limpieza para seguir el estado de las habitaciones y asignar tareas de limpieza en las propiedades.
   </Card>
-  <Card title="Admin Control Panel" icon="shield-check">
-    Administrators manage hotels, rooms, staff accounts, and can view platform-wide reports and all invoices through protected admin routes.
+
+  <Card title="Panel de control del administrador" icon="shield-check">
+    Los administradores gestionan hoteles, habitaciones, cuentas de personal y pueden ver reportes de toda la plataforma y todas las facturas a través de rutas protegidas para administradores.
   </Card>
-  <Card title="JWT Authentication" icon="lock">
-    Every protected route is secured with JSON Web Tokens. Tokens are issued on login or registration, stored in `localStorage`, and expire after 7 days.
+
+  <Card title="Autenticación JWT" icon="lock">
+    Cada ruta protegida está asegurada con JSON Web Tokens. Los tokens se emiten al iniciar sesión o al registrarse, se almacenan en `localStorage` y expiran después de 7 días.
   </Card>
-  <Card title="Invoice Generation" icon="receipt">
-    After a booking is completed, invoices can be created, retrieved, and updated through the `/api/invoices` endpoints for both guests and admins.
+
+  <Card title="Generación de facturas" icon="receipt">
+    Después de completar una reserva, se pueden crear, recuperar y actualizar facturas a través de los endpoints `/api/invoices` tanto para huéspedes como para administradores.
   </Card>
 </CardGroup>
 
-## Tech Stack
+## Stack tecnológico
 
-ViniHotel is split into two independently runnable services that communicate over HTTP.
+ViniHotel está dividido en dos servicios ejecutables de forma independiente que se comunican a través de HTTP.
 
-**Frontend** (`/` — root of the repository)
-- React 18 with React Router 7 for client-side routing
-- Vite 6 as the build tool and dev server (runs on port 5173)
-- Tailwind CSS 4 for styling
-- Radix UI + MUI component libraries
-- `src/utils/apiClient.ts` — a typed `ApiClient` class that attaches the `Authorization: Bearer` header to every authenticated request
+**Frontend** (`/` — raíz del repositorio)
+
+- React 18 con React Router 7 para el enrutamiento del lado del cliente
+- Vite 6 como herramienta de construcción y servidor de desarrollo (se ejecuta en el puerto 5173)
+- Tailwind CSS 4 para los estilos
+- Librerías de componentes Radix UI \+ MUI
+- `src/utils/apiClient.ts` — una clase `ApiClient` tipada que adjunta el encabezado `Authorization: Bearer` a cada solicitud autenticada
 
 **Backend** (`/backend`)
-- Node.js with Express 4
-- SQLite via the `sqlite` and `sqlite3` packages — database file at `backend/data/vinihotel.db`
-- `bcryptjs` for password hashing, `jsonwebtoken` for JWT issuance and verification
-- `nodemon` for hot-reloading during development (runs on port 5000)
 
-**Database**
+- Node.js con Express 4
+- SQLite a través de los paquetes `sqlite` y `sqlite3` — archivo de base de datos en `backend/data/vinihotel.db`
+- `bcryptjs` para el hashing de contraseñas, `jsonwebtoken` para la emisión y verificación de JWT
+- `nodemon` para recarga en caliente durante el desarrollo (se ejecuta en el puerto 5000)
 
-The SQLite database is initialized automatically when the backend starts. It creates seven tables: `usuarios`, `clientes`, `hoteles`, `rooms`, `bookings`, `invoices`, and `staff`. Sample data (hotels, rooms, and test users) is seeded on first startup.
+**Base de datos**
 
-## User Roles
+La base de datos SQLite se inicializa automáticamente cuando el backend se inicia. Crea siete tablas: `usuarios`, `clientes`, `hoteles`, `rooms`, `bookings`, `invoices` y `staff`. Los datos de ejemplo (hoteles, habitaciones y usuarios de prueba) se cargan en la primera ejecución.
 
-ViniHotel has three distinct roles, each with access to a different set of frontend routes and API endpoints.
+## Roles de usuario
 
-| Role | Access |
-|------|--------|
-| `client` | Home, hotel detail, payment, booking confirmation, my bookings, profile |
-| `staff` | All client pages plus booking management and housekeeping |
-| `admin` | All pages including staff management, hotel management, and reports |
+ViniHotel tiene tres roles distintos, cada uno con acceso a un conjunto diferente de rutas del frontend y endpoints de la API.
+
+| Rol | Acceso |
+| --- | --- |
+| `client` | Inicio, detalle de hotel, pago, confirmación de reserva, mis reservas, perfil |
+| `staff` | Todas las páginas del cliente más gestión de reservas y limpieza |
+| `admin` | Todas las páginas, incluyendo gestión de personal, gestión de hoteles y reportes |
 
 <Info>
-  Role enforcement happens in two places: the `ProtectedRoute` component in the frontend (see `src/app/routes.tsx`) and JWT middleware on the backend. A user without the required role is redirected by the frontend before any API call is made.
+  La aplicación de los roles ocurre en dos lugares: el componente `ProtectedRoute` en el frontend (ver `src/app/routes.tsx`) y el middleware JWT en el backend. Un usuario sin el rol requerido es redirigido por el frontend antes de que se realice cualquier llamada a la API.
 </Info>
 
-## Next Steps
+## Próximos pasos
 
-Ready to run ViniHotel locally? Follow the [Quickstart](/quickstart) guide to have both servers running in under five minutes.
+¿Listo para ejecutar ViniHotel localmente? Sigue la guía de [Inicio rápido](/quickstart) para tener ambos servidores funcionando en menos de cinco minutos.

@@ -1,100 +1,104 @@
 ---
-title: "ViniHotel REST API Reference Overview"
-description: "Complete reference for the ViniHotel REST API built on Express, covering the base URL, all resource endpoints, and request/response conventions."
+title: "Descripción General de la API REST de ViniHotel"
+description: "Referencia completa de la API REST de ViniHotel construida sobre Express, que cubre la URL base, todos los endpoints de recursos y las convenciones de solicitud/respuesta."
 ---
 
-The ViniHotel backend exposes a REST API built with Node.js and Express. Every endpoint is mounted under the `/api/` prefix and communicates exclusively in JSON. In development the server runs on `http://localhost:5000`; all examples in this reference use that base URL.
+El backend de ViniHotel expone una API REST construida con Node.js y Express. Cada endpoint está montado bajo el prefijo `/api/` y se comunica exclusivamente en JSON. En desarrollo el servidor corre en `http://localhost:5000`; todos los ejemplos de esta referencia usan esa URL base.
 
-## Base URL
+## URL base
 
-```
+```text
 http://localhost:5000
 ```
 
-All routes are prefixed with `/api/`. The server's CORS configuration allows requests from `http://localhost:5173` (the Vite frontend) by default, controlled via the `CORS_ORIGIN` environment variable.
+Todas las rutas tienen el prefijo `/api/`. La configuración CORS del servidor permite solicitudes desde `http://localhost:5173` (el frontend de Vite) por defecto, controlado mediante la variable de entorno `CORS_ORIGIN`.
 
-## Endpoint Overview
+## Resumen de endpoints
 
-The table below lists every route grouped by resource, the HTTP method, whether a valid JWT bearer token is required, and the minimum role needed to access the endpoint.
+La tabla a continuación lista todas las rutas agrupadas por recurso, el método HTTP, si se requiere un token JWT Bearer válido y el rol mínimo necesario para acceder al endpoint.
 
-| Resource | Method | Path | Auth | Role |
-|----------|--------|------|------|------|
+| Recurso | Método | Ruta | Auth | Rol |
+| --- | --- | --- | --- | --- |
 | **Auth** | POST | `/api/auth/register` | No | — |
-| | POST | `/api/auth/login` | No | — |
-| | GET | `/api/auth/me` | Yes | any |
-| | PUT | `/api/auth/profile` | Yes | any |
+|  | POST | `/api/auth/login` | No | — |
+|  | GET | `/api/auth/me` | Sí | cualquiera |
+|  | PUT | `/api/auth/profile` | Sí | cualquiera |
 | **Hotels** | GET | `/api/hotels` | No | — |
-| | GET | `/api/hotels/:idHotel` | No | — |
-| | POST | `/api/hotels` | Yes | admin |
-| | PUT | `/api/hotels/:idHotel` | Yes | admin |
-| | DELETE | `/api/hotels/:idHotel` | Yes | admin |
+|  | GET | `/api/hotels/:idHotel` | No | — |
+|  | POST | `/api/hotels` | Sí | admin |
+|  | PUT | `/api/hotels/:idHotel` | Sí | admin |
+|  | DELETE | `/api/hotels/:idHotel` | Sí | admin |
 | **Rooms** | GET | `/api/rooms` | No | — |
-| | GET | `/api/rooms/hotel/:hotelId` | No | — |
-| | GET | `/api/rooms/:id` | No | — |
-| | POST | `/api/rooms` | Yes | admin |
-| | PUT | `/api/rooms/:id` | Yes | admin |
-| | DELETE | `/api/rooms/:id` | Yes | admin |
-| | POST | `/api/rooms/check-availability` | No | — |
-| **Bookings** | GET | `/api/bookings/my-bookings` | Yes | any |
-| | GET | `/api/bookings/:id` | Yes | any |
-| | POST | `/api/bookings` | Yes | any |
-| | PUT | `/api/bookings/:id` | Yes | any |
-| | POST | `/api/bookings/:id/cancel` | Yes | any |
-| | GET | `/api/bookings` | Yes | admin/staff |
-| **Invoices** | GET | `/api/invoices/my-invoices` | Yes | any |
-| | GET | `/api/invoices/:id` | Yes | any |
-| | POST | `/api/invoices` | Yes | any |
-| | PUT | `/api/invoices/:id` | Yes | any |
-| | GET | `/api/invoices` | Yes | admin |
+|  | GET | `/api/rooms/hotel/:hotelId` | No | — |
+|  | GET | `/api/rooms/:id` | No | — |
+|  | POST | `/api/rooms` | Sí | admin |
+|  | PUT | `/api/rooms/:id` | Sí | admin |
+|  | DELETE | `/api/rooms/:id` | Sí | admin |
+|  | POST | `/api/rooms/check-availability` | No | — |
+| **Bookings** | GET | `/api/bookings/my-bookings` | Sí | cualquiera |
+|  | GET | `/api/bookings/:id` | Sí | cualquiera |
+|  | POST | `/api/bookings` | Sí | cualquiera |
+|  | PUT | `/api/bookings/:id` | Sí | cualquiera |
+|  | POST | `/api/bookings/:id/cancel` | Sí | cualquiera |
+|  | GET | `/api/bookings` | Sí | admin/staff |
+| **Invoices** | GET | `/api/invoices/my-invoices` | Sí | cualquiera |
+|  | GET | `/api/invoices/:id` | Sí | cualquiera |
+|  | POST | `/api/invoices` | Sí | cualquiera |
+|  | PUT | `/api/invoices/:id` | Sí | cualquiera |
+|  | GET | `/api/invoices` | Sí | admin |
 | **Health** | GET | `/api/health` | No | — |
 
-## Request and Response Format
+## Formato de solicitud y respuesta
 
-All request bodies must be sent as JSON with the `Content-Type: application/json` header. All successful responses return JSON. Error responses follow a consistent shape:
+Todos los cuerpos de solicitud deben enviarse como JSON con el encabezado `Content-Type: application/json`. Todas las respuestas exitosas devuelven JSON. Las respuestas de error siguen una estructura consistente:
 
 ```json
-{ "error": "Human-readable error message" }
+{ "error": "Mensaje de error legible" }
 ```
 
-## Authentication
+## Autenticación
 
-Protected routes require a JWT bearer token passed in the `Authorization` header:
+Las rutas protegidas requieren un token JWT Bearer pasado en el encabezado `Authorization`:
 
-```
+```text
 Authorization: Bearer <token>
 ```
 
-Tokens are issued on register and login, expire after **7 days**, and encode the user's `userId` and `role` (`client`, `staff`, or `admin`). See the [Authentication](/api/authentication) page for the full registration, login, and token usage reference.
+Los tokens se emiten al registrarse e iniciar sesión, expiran tras **7 días** y codifican el `userId` y `role` del usuario (`client`, `staff` o `admin`). Consulta la página de [Autenticación](/api/authentication) para la referencia completa de registro, inicio de sesión y uso de tokens.
 
-## Health Check
+## Health check
 
-Use the health endpoint to verify the server is reachable before making authenticated requests.
+Usa el endpoint de health para verificar que el servidor es alcanzable antes de realizar solicitudes autenticadas.
 
 ```bash
 curl http://localhost:5000/api/health
-# Response: {"status":"Backend running"}
+# Respuesta: {"status":"Backend running"}
 ```
 
 <Note>
-  The health endpoint requires no authentication and is useful for uptime monitoring or confirming that your local development server started successfully.
+  El endpoint de health no requiere autenticación y es útil para monitoreo de disponibilidad o para confirmar que tu servidor de desarrollo local inició correctamente.
 </Note>
 
-## Resource Pages
+## Páginas de recursos
 
 <CardGroup cols={2}>
-  <Card title="Authentication" href="/api/authentication">
-    Register, log in, fetch the current user profile, and update account details.
+  <Card title="Autenticación" href="/api/authentication">
+    Regístrate, inicia sesión, obtén el perfil del usuario actual y actualiza los datos de la cuenta.
   </Card>
+
   <Card title="Hotels" href="/api/hotels">
-    Browse hotels, retrieve a single property, and manage hotel records as an admin.
+    Explora hoteles, obtén una propiedad específica y gestiona los registros de hoteles como administrador.
   </Card>
+
   <Card title="Rooms" href="/api/rooms">
-    List rooms, check availability by date range, and manage room inventory as an admin.
+    Lista habitaciones, verifica disponibilidad por rango de fechas y gestiona el inventario de habitaciones como administrador.
   </Card>
+
   <Card title="Bookings" href="/api/bookings">
-    Create and manage guest reservations, cancel bookings, and view all bookings as staff or admin.
+    Crea y gestiona reservas de huéspedes, cancela reservas y consulta todas las reservas como personal o administrador.
   </Card>
+
   <Card title="Invoices" href="/api/invoices">
-    Generate invoices for completed stays, retrieve invoice details, and list all invoices as admin.
+    Genera facturas para estadías completadas, obtén detalles de facturas y lista todas las facturas como administrador.
   </Card>
 </CardGroup>

@@ -1,123 +1,132 @@
 ---
-title: "Staff Management and Hotel Assignment"
-description: "Add, update, and assign hotel staff to ViniHotel properties. Manage positions, statuses (active, inactive, on-leave), and optional user account links."
+title: "Gestión de Personal y Asignación a Hoteles"
+description: "Agrega, actualiza y asigna personal de hotel a las propiedades de ViniHotel. Gestiona puestos, estados (activo, inactivo, de baja) y vínculos opcionales con cuentas de usuario."
 ---
 
-The staff management page is the admin tool for maintaining the workforce directory across all ViniHotel properties. It is accessible at the `/staff` route and provides a searchable, filterable table of every employee in the system. Admins can create new staff records, assign employees to specific hotels, update contact details and employment status, and remove staff members when needed. Three summary cards at the top of the page show total staff count, active headcount, and inactive headcount in real time.
+La página de gestión de personal es la herramienta de administración para mantener el directorio de empleados en todas las propiedades de ViniHotel. Es accesible en la ruta `/staff` y proporciona una tabla con búsqueda y filtros de todos los empleados en el sistema. Los administradores pueden crear nuevos registros de personal, asignar empleados a hoteles específicos, actualizar datos de contacto y estado de empleo, y eliminar miembros del personal cuando sea necesario. Tres tarjetas de resumen en la parte superior de la página muestran en tiempo real el total de personal, el número de empleados activos y el número de empleados inactivos.
 
 <Warning>
-  Access to `/staff` is restricted to users with the **admin** role. Staff members themselves cannot manage other staff records.
+  El acceso a `/staff` está restringido a usuarios con el rol **admin**. Los propios miembros del personal no pueden gestionar otros registros de personal.
 </Warning>
 
-## Staff fields
+## Campos del personal
 
-Each staff record maps to a row in the `staff` table. The following fields are available when creating or editing an employee.
+Cada registro de personal corresponde a una fila en la tabla `staff`. Los siguientes campos están disponibles al crear o editar un empleado.
 
 <CardGroup cols={2}>
   <Card title="name" icon="user">
-    Full name of the staff member (e.g. `María González`). Required. Stored as `name` in the `staff` table.
+    Nombre completo del miembro del personal (ej. `María González`). Obligatorio. Almacenado como `name` en la tabla `staff`.
   </Card>
+
   <Card title="position" icon="briefcase">
-    The job title or role of the employee. Free-text field. Common values in the system are `receptionist`, `housekeeper`, and `manager`, though any string is accepted. Required.
+    El título o rol del empleado. Campo de texto libre. Los valores más comunes en el sistema son `receptionist`, `housekeeper` y `manager`, aunque se acepta cualquier cadena. Obligatorio.
   </Card>
+
   <Card title="hotelId" icon="hotel">
-    The ID of the hotel this staff member is assigned to. Required. Selected from a dropdown that lists all hotels currently in the system. The resolved hotel name is stored alongside the ID as `hotelName`.
+    El ID del hotel al que está asignado este miembro del personal. Obligatorio. Se selecciona de un menú desplegable que lista todos los hoteles registrados actualmente en el sistema. El nombre del hotel resuelto se almacena junto al ID como `hotelName`.
   </Card>
+
   <Card title="email" icon="envelope">
-    Work email address for the staff member (e.g. `maria@hotel.com`). Required. Used as the contact identifier in the staff table.
+    Correo electrónico de trabajo del miembro del personal (ej. `maria@hotel.com`). Obligatorio. Se usa como identificador de contacto en la tabla de personal.
   </Card>
+
   <Card title="phone" icon="phone">
-    Contact phone number (e.g. `+34 912 345 678`). Optional. Displayed in the staff table when present.
+    Número de teléfono de contacto (ej. `+34 912 345 678`). Opcional. Se muestra en la tabla de personal cuando está presente.
   </Card>
+
   <Card title="status" icon="circle">
-    Employment status. See the status reference below. Defaults to `active`.
+    Estado de empleo. Consulta la referencia de estados a continuación. Por defecto es `active`.
   </Card>
+
   <Card title="hireDate" icon="calendar">
-    The date the employee was hired, in `YYYY-MM-DD` format. Required. Defaults to today's date when creating a new record.
+    La fecha en que fue contratado el empleado, en formato `YYYY-MM-DD`. Obligatorio. Por defecto es la fecha de hoy al crear un nuevo registro.
   </Card>
+
   <Card title="idUsuario" icon="key">
-    Optional foreign key linking the staff record to a user account in the `usuarios` table. Allows the staff member to log in to the system. A staff record can exist without a linked user account.
+    Clave foránea opcional que vincula el registro de personal a una cuenta de usuario en la tabla `usuarios`. Permite al miembro del personal iniciar sesión en el sistema. Un registro de personal puede existir sin una cuenta de usuario vinculada.
   </Card>
 </CardGroup>
 
-## Staff statuses
+## Estados del personal
 
-The `status` field on a staff record accepts the following values, as defined in the `staff` table schema:
+El campo `status` en un registro de personal acepta los siguientes valores, según se define en el esquema de la tabla `staff`:
 
-| Status | Description |
-|--------|-------------|
-| `active` | Employee is currently working. Shown in green in the staff table. Counted in the **Personal Activo** summary card. |
-| `inactive` | Employee is no longer working (e.g. resigned, terminated). Counted in the **Personal Inactivo** summary card. |
-| `on-leave` | Employee is temporarily away (e.g. sick leave, vacation). Defined in the database schema as a valid status alongside `active` and `inactive`. |
+| Estado | Descripción |
+| --- | --- |
+| `active` | El empleado está trabajando actualmente. Se muestra en verde en la tabla de personal. Se cuenta en la tarjeta de resumen **Personal Activo**. |
+| `inactive` | El empleado ya no trabaja (ej. renunció, fue despedido). Se cuenta en la tarjeta de resumen **Personal Inactivo**. |
+| `on-leave` | El empleado está temporalmente ausente (ej. baja por enfermedad, vacaciones). Definido en el esquema de la base de datos como un estado válido junto a `active` e `inactive`. |
 
 <Note>
-  The frontend form currently exposes `active` and `inactive` as selectable options. The `on-leave` status is defined in the database schema and can be set via the API or direct database update.
+  El formulario del frontend actualmente expone `active` e `inactive` como opciones seleccionables. El estado `on-leave` está definido en el esquema de la base de datos y puede establecerse a través de la API o una actualización directa de la base de datos.
 </Note>
 
-## Adding a new staff member
+## Agregar un nuevo miembro del personal
 
 <Steps>
-  <Step title="Open the Add Staff dialog">
-    Navigate to `/staff` and click **Agregar Personal**. The dialog form opens with fields reset to defaults (`status: active`, `hireDate` set to today).
+  <Step title="Abre el diálogo Agregar Personal">
+    Navega a `/staff` y haz clic en **Agregar Personal**. El formulario del diálogo se abre con los campos restablecidos a sus valores predeterminados (`status: active`, `hireDate` establecida en hoy).
   </Step>
-  <Step title="Enter required fields">
-    Fill in **Nombre completo**, **Posición**, **Hotel** (selected from the dropdown), and **Email**. The submit button stays disabled until all four are populated.
+  <Step title="Completa los campos obligatorios">
+    Rellena **Nombre completo**, **Posición**, **Hotel** (seleccionado del menú desplegable) y **Email**. El botón de envío permanece deshabilitado hasta que los cuatro estén completados.
   </Step>
-  <Step title="Add optional contact details">
-    Optionally enter a **Teléfono** number. This appears in the contact column of the staff table when provided.
+  <Step title="Agrega datos de contacto opcionales">
+    Opcionalmente ingresa un número de **Teléfono**. Este aparece en la columna de contacto de la tabla de personal cuando se proporciona.
   </Step>
-  <Step title="Set status and hire date">
-    Choose `active` or `inactive` from the **Estado** dropdown. Adjust the **Fecha de contratación** if the hire date differs from today.
+  <Step title="Configura el estado y la fecha de contratación">
+    Elige `active` o `inactive` en el menú desplegable **Estado**. Ajusta la **Fecha de contratación** si la fecha de inicio difiere de hoy.
   </Step>
-  <Step title="Submit">
-    Click **Agregar Empleado**. The new record is saved and appears immediately in the staff table. The resolved hotel name is stored alongside `hotelId` by joining against the loaded hotel list.
+  <Step title="Envía">
+    Haz clic en **Agregar Empleado**. El nuevo registro se guarda y aparece inmediatamente en la tabla de personal. El nombre del hotel resuelto se almacena junto al `hotelId` mediante una unión con la lista de hoteles cargada.
   </Step>
 </Steps>
 
-## Assigning staff to a hotel
+## Asignar personal a un hotel
 
-Hotel assignment is made through the **Hotel** dropdown in the add/edit form. The dropdown is populated from all hotels currently registered in the system. Selecting a hotel sets `hotelId` on the staff record, which links it to the `hoteles` table via the `staff.hotelId → hoteles.idHotel` foreign key.
+La asignación de hotel se realiza a través del menú desplegable **Hotel** en el formulario de agregar/editar. El menú se rellena con todos los hoteles registrados actualmente en el sistema. Al seleccionar un hotel se establece `hotelId` en el registro de personal, lo que lo vincula a la tabla `hoteles` a través de la clave foránea `staff.hotelId → hoteles.idHotel`.
 
-The staff table can be filtered by hotel using the **Filtrar por hotel** selector, making it easy to view all employees at a specific property.
+La tabla de personal puede filtrarse por hotel usando el selector **Filtrar por hotel**, lo que facilita ver todos los empleados en una propiedad específica.
 
-## Updating staff status
+## Actualizar el estado del personal
 
 <Steps>
-  <Step title="Find the employee">
-    Use the search input to filter by name, position, or email. Optionally use the **Filtrar por estado** selector to scope the list to a specific status.
+  <Step title="Encuentra al empleado">
+    Usa el campo de búsqueda para filtrar por nombre, posición o correo electrónico. Opcionalmente usa el selector **Filtrar por estado** para acotar la lista a un estado específico.
   </Step>
-  <Step title="Open the edit dialog">
-    Click the pencil icon in the **Acciones** column for the staff member. The form pre-populates with their current data.
+  <Step title="Abre el diálogo de edición">
+    Haz clic en el ícono de lápiz en la columna **Acciones** del miembro del personal. El formulario se pre-rellena con sus datos actuales.
   </Step>
-  <Step title="Change the status">
-    Update the **Estado** dropdown to `active` or `inactive` and click **Actualizar Empleado**. The change is reflected immediately in the table badge.
+  <Step title="Cambia el estado">
+    Actualiza el menú desplegable **Estado** a `active` o `inactive` y haz clic en **Actualizar Empleado**. El cambio se refleja inmediatamente en la insignia de la tabla.
   </Step>
 </Steps>
 
-## Staff roles and responsibilities
+## Roles y responsabilidades del personal
 
-The `position` field is free-text, but ViniHotel conventionally uses three primary roles:
+El campo `position` es de texto libre, pero ViniHotel convencionalmente usa tres roles principales:
 
 <CardGroup cols={3}>
   <Card title="receptionist" icon="concierge-bell">
-    Handles guest check-in and check-out at the front desk. Typically has access to the booking management panel at `/bookings`.
+    Gestiona el check-in y check-out de huéspedes en la recepción. Típicamente tiene acceso al panel de gestión de reservas en `/bookings`.
   </Card>
+
   <Card title="housekeeper" icon="broom">
-    Responsible for room cleaning and turnover. Works primarily from the housekeeping dashboard at `/housekeeping` to update room statuses.
+    Responsable de la limpieza y rotación de habitaciones. Trabaja principalmente desde el panel de housekeeping en `/housekeeping` para actualizar los estados de las habitaciones.
   </Card>
+
   <Card title="manager" icon="user-tie">
-    Oversees hotel operations. May have broader system access depending on whether their staff record is linked to a user account with elevated privileges.
+    Supervisa las operaciones del hotel. Puede tener un acceso más amplio al sistema dependiendo de si su registro de personal está vinculado a una cuenta de usuario con privilegios elevados.
   </Card>
 </CardGroup>
 
-## Staff and user accounts
+## Personal y cuentas de usuario
 
-A staff record and a user account are separate entities. The `idUsuario` column on the `staff` table is a nullable foreign key — a staff member can exist in the system purely as a directory entry without any login credentials.
+Un registro de personal y una cuenta de usuario son entidades separadas. La columna `idUsuario` en la tabla `staff` es una clave foránea nullable — un miembro del personal puede existir en el sistema únicamente como entrada de directorio sin credenciales de inicio de sesión.
 
-When a staff member needs to log in (for example, to access the housekeeping or booking management panels), their `staff` record must be linked to an entry in the `usuarios` table by setting `idUsuario`. The `getStaffByUsuario(idUsuario)` model function resolves this relationship at login time.
+Cuando un miembro del personal necesita iniciar sesión (por ejemplo, para acceder a los paneles de housekeeping o gestión de reservas), su registro `staff` debe estar vinculado a una entrada en la tabla `usuarios` mediante el establecimiento de `idUsuario`. La función de modelo `getStaffByUsuario(idUsuario)` resuelve esta relación en el momento del inicio de sesión.
 
-```
+```text
 USUARIOS (1) ─────> (N) STAFF
-A single user account can be linked to multiple staff records (e.g. across hotels),
-but a staff record with no idUsuario cannot log in to the system.
+Una sola cuenta de usuario puede estar vinculada a múltiples registros de personal (ej. en distintos hoteles),
+pero un registro de personal sin idUsuario no puede iniciar sesión en el sistema.
 ```

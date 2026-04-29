@@ -1,107 +1,111 @@
 ---
-title: "View and Manage Your Reservations"
-description: "Access your complete booking history in ViniHotel, understand confirmed and checked-in reservation statuses, cancel upcoming stays, and view linked invoices."
+title: "Ver y Gestionar Tus Reservas"
+description: "Accede a tu historial completo de reservas en ViniHotel, comprende los estados de reservas confirmadas y en curso, cancela estadías futuras y consulta las facturas vinculadas."
 ---
 
-The My Bookings page gives you a consolidated view of every reservation tied to your account — upcoming stays, the current active stay, and your booking history. You can also cancel upcoming reservations directly from this page.
+La página Mis Reservas te ofrece una vista consolidada de todas las reservas vinculadas a tu cuenta — estadías futuras, la estadía activa actual y tu historial de reservas. También puedes cancelar reservas futuras directamente desde esta página.
 
 <Info>
-  The page at `/my-bookings` requires authentication. If you are not logged in, you will be redirected to `/login`.
+  La página en `/my-bookings` requiere autenticación. Si no has iniciado sesión, serás redirigido a `/login`.
 </Info>
 
-## Accessing My Bookings
+## Acceder a Mis Reservas
 
-Navigate to `/my-bookings` from the main navigation. The page opens with three summary cards at the top:
+Navega a `/my-bookings` desde la navegación principal. La página se abre con tres tarjetas de resumen en la parte superior:
 
-- **Total de Reservas** — total number of bookings across all time
-- **Próximas** — count of bookings where `checkIn` is in the future
-- **Completadas** — count of bookings where `checkOut` is in the past
+- **Total de Reservas** — número total de reservas en todo el historial
+- **Próximas** — cantidad de reservas donde `checkIn` está en el futuro
+- **Completadas** — cantidad de reservas donde `checkOut` ya pasó
 
-## Booking sections
+## Secciones de reservas
 
-Bookings are split into three sections based on their dates relative to today:
+Las reservas se dividen en tres secciones según sus fechas en relación con el día de hoy:
 
-### Current stay
+### Estadía actual
 
-If today falls between `checkIn` and `checkOut`, the booking appears in the **Estancia Actual** section with a green "En curso" badge. This section shows:
+Si hoy está entre `checkIn` y `checkOut`, la reserva aparece en la sección **Estancia Actual** con una insignia verde "En curso". Esta sección muestra:
 
-- `hotelName` and `roomName`
-- `checkIn` and `checkOut` dates
-- `guests` count
-- `guestName` and `guestEmail`
+- `hotelName` y `roomName`
+- Fechas de `checkIn` y `checkOut`
+- Cantidad de `guests`
+- `guestName` y `guestEmail`
 - `totalPrice`
 
-### Upcoming bookings
+### Reservas próximas
 
-Reservations where `checkIn` is still in the future appear under **Próximas Reservas** with a blue "Próxima" badge. Each card shows check-in and check-out dates, guest count, and total price. A **Cancelar Reserva** button is available for each upcoming booking.
+Las reservas donde `checkIn` aún está en el futuro aparecen bajo **Próximas Reservas** con una insignia azul "Próxima". Cada tarjeta muestra las fechas de entrada y salida, la cantidad de huéspedes y el precio total. Un botón **Cancelar Reserva** está disponible para cada reserva próxima.
 
-### Booking history
+### Historial de reservas
 
-Past bookings (where `checkOut` has already passed) appear in **Historial de Reservas** with a grey "Completada" badge. These cards are read-only.
+Las reservas pasadas (donde `checkOut` ya pasó) aparecen en **Historial de Reservas** con una insignia gris "Completada". Estas tarjetas son de solo lectura.
 
-## Booking statuses explained
+## Explicación de los estados de reserva
 
-The `status` field on a `Booking` record has five possible values:
+El campo `status` en un registro `Booking` tiene cinco valores posibles:
 
 <AccordionGroup>
   <Accordion title="confirmed">
-    The reservation has been accepted. The guest has not yet checked in. Bookings created through the standard flow start in this status. Cancellation is allowed while the booking is `confirmed`.
+    La reserva ha sido aceptada. El huésped aún no ha hecho el check-in. Las reservas creadas a través del flujo estándar comienzan en este estado. La cancelación está permitida mientras la reserva esté en `confirmed`.
   </Accordion>
+
   <Accordion title="checked-in">
-    The guest has checked in. The associated room's `roomStatus` is `occupied`. This status is set by staff via the admin panel and is displayed as "En curso" in the UI.
+    El huésped ha hecho el check-in. El `roomStatus` de la habitación asociada está en `occupied`. Este estado es asignado por el personal a través del panel de administración y se muestra como "En curso" en la interfaz.
   </Accordion>
+
   <Accordion title="checked-out">
-    The guest has checked out. The room's status moves to `cleaning`. Displayed as "Completada" in booking history.
+    El huésped ha hecho el check-out. El estado de la habitación pasa a `cleaning`. Se muestra como "Completada" en el historial de reservas.
   </Accordion>
+
   <Accordion title="cancelled">
-    The booking was cancelled. The `paymentStatus` is automatically set to `refunded`. Cancelled bookings cannot be reinstated.
+    La reserva fue cancelada. El `paymentStatus` se establece automáticamente en `refunded`. Las reservas canceladas no pueden reinstaurarse.
   </Accordion>
+
   <Accordion title="pending">
-    An intermediate status available to admin/staff workflows. Not assigned through the standard customer booking flow.
+    Un estado intermedio disponible para los flujos de trabajo de admin/personal. No se asigna a través del flujo estándar de reserva de clientes.
   </Accordion>
 </AccordionGroup>
 
-## Payment statuses
+## Estados de pago
 
-The `paymentStatus` field tracks the financial state of a booking:
+El campo `paymentStatus` rastrea el estado financiero de una reserva:
 
-| Status | Meaning |
-|---|---|
-| `paid` | Payment was received (set immediately for debit card payments) |
-| `pending` | Payment has not yet been confirmed (bank transfer or QR payments start here) |
-| `refunded` | Payment was reversed, typically after cancellation |
+| Estado | Significado |
+| --- | --- |
+| `paid` | El pago fue recibido (se establece de inmediato para pagos con tarjeta de débito) |
+| `pending` | El pago aún no ha sido confirmado (las transferencias bancarias o pagos con QR comienzan aquí) |
+| `refunded` | El pago fue revertido, generalmente tras una cancelación |
 
-## How to cancel a booking
+## Cómo cancelar una reserva
 
-You can cancel any booking that still has a future `checkIn` date.
+Puedes cancelar cualquier reserva que aún tenga una fecha `checkIn` futura.
 
 <Steps>
-  <Step title="Go to My Bookings">
-    Navigate to `/my-bookings`. Upcoming reservations appear in the **Próximas Reservas** section.
+  <Step title="Ve a Mis Reservas">
+    Navega a `/my-bookings`. Las reservas futuras aparecen en la sección **Próximas Reservas**.
   </Step>
-  <Step title="Click Cancel">
-    Click **Cancelar Reserva** on the booking you want to cancel. A confirmation prompt appears.
+  <Step title="Haz clic en Cancelar">
+    Haz clic en **Cancelar Reserva** en la reserva que deseas cancelar. Aparece un mensaje de confirmación.
   </Step>
-  <Step title="Confirm cancellation">
-    Confirm the action. The booking's `status` is set to `cancelled` and `paymentStatus` is set to `refunded`.
+  <Step title="Confirma la cancelación">
+    Confirma la acción. El `status` de la reserva se establece en `cancelled` y el `paymentStatus` se establece en `refunded`.
   </Step>
 </Steps>
 
 <Warning>
-  Cancellation is irreversible. Once a booking is cancelled, it cannot be reinstated through the application.
+  La cancelación es irreversible. Una vez que una reserva es cancelada, no puede reinstaurarse a través de la aplicación.
 </Warning>
 
-## Viewing invoice details
+## Ver los detalles de la factura
 
-Each completed or confirmed booking has a corresponding invoice. To view the invoice:
+Cada reserva completada o confirmada tiene una factura correspondiente. Para ver la factura:
 
-1. Go to `/profile` and open the **Facturas** tab.
-2. Find the invoice by hotel name, room name, or issue date.
-3. Click **Ver Factura** to open a detail dialog showing subtotal, 16% taxes, any additional charges, and the payment method and status.
-4. Use **Descargar PDF** to print or save the invoice.
+1. Ve a `/profile` y abre la pestaña **Facturas**.
+2. Encuentra la factura por nombre del hotel, nombre de la habitación o fecha de emisión.
+3. Haz clic en **Ver Factura** para abrir un diálogo de detalle que muestra el subtotal, los impuestos del 16%, los cargos adicionales, el método de pago y el estado del pago.
+4. Usa **Descargar PDF** para imprimir o guardar la factura.
 
-Invoice fields include `subtotal`, `taxes`, `additionalCharges`, `total`, `paymentMethod`, and `paymentStatus`. The `issuedDate` is set to the moment the booking was confirmed.
+Los campos de la factura incluyen `subtotal`, `taxes`, `additionalCharges`, `total`, `paymentMethod` y `paymentStatus`. La `issuedDate` se establece en el momento en que se confirmó la reserva.
 
 <Note>
-  After cancellation, the invoice's `paymentStatus` is updated to `refunded`. The invoice itself is retained in your invoice history and remains viewable.
+  Tras la cancelación, el `paymentStatus` de la factura se actualiza a `refunded`. La factura en sí se conserva en tu historial de facturas y permanece visible.
 </Note>

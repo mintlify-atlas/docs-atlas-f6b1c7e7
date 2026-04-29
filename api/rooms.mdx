@@ -1,6 +1,6 @@
 ---
-title: "Rooms API — Manage and Check Room Availability"
-description: "Full reference for ViniHotel room endpoints: list rooms, filter by hotel, check date availability, and manage room inventory with admin-only CRUD operations."
+title: "Rooms API — Gestionar y Verificar Disponibilidad de Habitaciones"
+description: "Referencia completa para los endpoints de habitaciones de ViniHotel: lista habitaciones, filtra por hotel, verifica disponibilidad por fechas y gestiona el inventario de habitaciones con operaciones CRUD exclusivas para administradores."
 ---
 
 The Rooms API exposes all room data within ViniHotel. Rooms belong to hotels via the `hotelId` foreign key and can be queried publicly. Use the availability endpoint before creating a booking to confirm a room is free for your requested dates and guest count.
@@ -19,34 +19,44 @@ Returns all rooms across every hotel. No authentication required.
 
 <ResponseField name="[]" type="object[]">
   Array of room objects.
+
   <Expandable title="room object properties">
     <ResponseField name="id" type="string" required>
       UUID of the room.
     </ResponseField>
+
     <ResponseField name="hotelId" type="string" required>
       UUID of the hotel this room belongs to.
     </ResponseField>
+
     <ResponseField name="name" type="string" required>
       Room name, e.g. `"Suite Presidencial"`.
     </ResponseField>
+
     <ResponseField name="type" type="string" required>
       Room type: `standard`, `deluxe`, `suite`, or similar.
     </ResponseField>
+
     <ResponseField name="price" type="number" required>
       Price per night in USD.
     </ResponseField>
+
     <ResponseField name="capacity" type="integer" required>
       Maximum number of guests.
     </ResponseField>
+
     <ResponseField name="image" type="string" required>
       URL of the room's image.
     </ResponseField>
+
     <ResponseField name="amenities" type="string[]" required>
       Parsed array of room amenities.
     </ResponseField>
+
     <ResponseField name="available" type="integer" required>
       Number of available units (stock). Defaults to `1`.
     </ResponseField>
+
     <ResponseField name="status" type="string" required>
       Current status: `available`, `occupied`, `maintenance`, `cleaning`, or `unavailable`.
     </ResponseField>
@@ -134,30 +144,39 @@ Returns a single room by its UUID. No authentication required.
 <ResponseField name="id" type="string" required>
   UUID of the room.
 </ResponseField>
+
 <ResponseField name="hotelId" type="string" required>
   UUID of the hotel this room belongs to.
 </ResponseField>
+
 <ResponseField name="name" type="string" required>
   Room name.
 </ResponseField>
+
 <ResponseField name="type" type="string" required>
   Room type.
 </ResponseField>
+
 <ResponseField name="price" type="number" required>
   Price per night in USD.
 </ResponseField>
+
 <ResponseField name="capacity" type="integer" required>
   Maximum number of guests.
 </ResponseField>
+
 <ResponseField name="image" type="string" required>
   URL of the room's image.
 </ResponseField>
+
 <ResponseField name="amenities" type="string[]" required>
   Parsed array of room amenities.
 </ResponseField>
+
 <ResponseField name="available" type="integer" required>
   Number of available units.
 </ResponseField>
+
 <ResponseField name="status" type="string" required>
   Current room status.
 </ResponseField>
@@ -204,12 +223,15 @@ The endpoint validates three things in order: the room's current `status`, wheth
 <ParamField body="roomId" type="string" required>
   UUID of the room to check.
 </ParamField>
+
 <ParamField body="checkIn" type="string" required>
   Check-in date in ISO 8601 format: `"YYYY-MM-DD"`.
 </ParamField>
+
 <ParamField body="checkOut" type="string" required>
   Check-out date in ISO 8601 format: `"YYYY-MM-DD"`.
 </ParamField>
+
 <ParamField body="guests" type="integer">
   Number of guests. If provided, the server validates against the room's `capacity`.
 </ParamField>
@@ -219,6 +241,7 @@ The endpoint validates three things in order: the room's current `status`, wheth
 <ResponseField name="available" type="boolean" required>
   `true` if the room can be booked for the given dates; `false` otherwise.
 </ResponseField>
+
 <ResponseField name="reason" type="string" required>
   Human-readable explanation, e.g. `"Habitación disponible"` or `"Habitación no disponible en esas fechas"`.
 </ResponseField>
@@ -253,28 +276,36 @@ Creates a new room and associates it with a hotel. **Admin only.**
 <ParamField body="hotelId" type="string" required>
   UUID of the hotel this room belongs to.
 </ParamField>
+
 <ParamField body="name" type="string" required>
   Room name, e.g. `"Suite Presidencial"`.
 </ParamField>
+
 <ParamField body="type" type="string" required>
   Room category: `standard`, `deluxe`, `suite`, or any custom value.
 </ParamField>
+
 <ParamField body="price" type="number" required>
   Price per night in USD.
 </ParamField>
+
 <ParamField body="capacity" type="integer" required>
   Maximum number of guests allowed.
 </ParamField>
+
 <ParamField body="image" type="string" required>
   URL of the room's image.
 </ParamField>
+
 <ParamField body="amenities" type="string[]" required>
   JSON array of amenity strings.
 </ParamField>
-<ParamField body="available" type="integer" default="1">
+
+<ParamField body="available" default="1" type="integer">
   Number of available units. Defaults to `1` if omitted.
 </ParamField>
-<ParamField body="status" type="string" default="available">
+
+<ParamField body="status" default="available" type="string">
   Initial room status. One of: `available`, `occupied`, `maintenance`, `cleaning`, `unavailable`. Defaults to `"available"`.
 </ParamField>
 
@@ -283,6 +314,7 @@ Creates a new room and associates it with a hotel. **Admin only.**
 <ResponseField name="message" type="string" required>
   Confirmation: `"Habitación creada exitosamente"`.
 </ResponseField>
+
 <ResponseField name="id" type="string" required>
   UUID assigned to the newly created room.
 </ResponseField>
@@ -334,24 +366,31 @@ Updates an existing room. **Admin only.** You may send any subset of the room fi
 <ParamField body="name" type="string">
   Updated room name.
 </ParamField>
+
 <ParamField body="type" type="string">
   Updated room type.
 </ParamField>
+
 <ParamField body="price" type="number">
   Updated price per night in USD.
 </ParamField>
+
 <ParamField body="capacity" type="integer">
   Updated maximum guest capacity.
 </ParamField>
+
 <ParamField body="image" type="string">
   Updated image URL.
 </ParamField>
+
 <ParamField body="amenities" type="string[]">
   Updated amenities array.
 </ParamField>
+
 <ParamField body="available" type="integer">
   Updated available unit count.
 </ParamField>
+
 <ParamField body="status" type="string">
   Updated room status: `available`, `occupied`, `maintenance`, `cleaning`, or `unavailable`.
 </ParamField>

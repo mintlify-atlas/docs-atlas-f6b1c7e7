@@ -1,13 +1,13 @@
 ---
-title: "Environment Variables Reference"
-description: "Complete reference for all environment variables the ViniHotel backend supports, including defaults, required fields, and production guidance."
+title: "Referencia de Variables de Entorno"
+description: "Referencia completa de todas las variables de entorno que admite el backend de ViniHotel, incluyendo valores predeterminados, campos obligatorios y recomendaciones para producción."
 ---
 
-The ViniHotel backend is configured entirely through environment variables loaded via `dotenv`. Create a `.env` file in the `backend/` directory before starting the server — the application reads these values at startup using `dotenv.config()` in `server.js`.
+El backend de ViniHotel se configura completamente a través de variables de entorno cargadas mediante `dotenv`. Crea un archivo `.env` en el directorio `backend/` antes de iniciar el servidor — la aplicación lee estos valores al arrancar mediante `dotenv.config()` en `server.js`.
 
-## Example .env File
+## Ejemplo de archivo .env
 
-Place this file at `backend/.env`:
+Coloca este archivo en `backend/.env`:
 
 ```text
 PORT=5000
@@ -19,36 +19,36 @@ CORS_ORIGIN=http://localhost:5173
 ```
 
 <Warning>
-  Never commit your `.env` file to version control. The backend's `.gitignore` already excludes it. Committing a real `JWT_SECRET` would allow anyone to forge authentication tokens for your application.
+  Nunca incluyas tu archivo `.env` en el control de versiones. El `.gitignore` del backend ya lo excluye. Subir un `JWT_SECRET` real permitiría que cualquier persona falsifique tokens de autenticación para tu aplicación.
 </Warning>
 
-## Variable Reference
+## Referencia de variables
 
 <AccordionGroup>
   <Accordion title="PORT">
-    **Default:** `5000`
+    **Valor predeterminado:** `5000`
 
-    The port the Express server listens on. The server binds with:
+    El puerto en el que escucha el servidor Express. El servidor se enlaza con:
 
     ```js
     const PORT = process.env.PORT || 5000;
     ```
 
-    Change this if port 5000 is already in use on your machine. If you change it, update `CORS_ORIGIN` on the frontend accordingly and adjust any `curl` commands to use the new port.
+    Cámbialo si el puerto 5000 ya está en uso en tu máquina. Si lo cambias, actualiza `CORS_ORIGIN` en el frontend en consecuencia y ajusta cualquier comando `curl` para usar el nuevo puerto.
   </Accordion>
 
   <Accordion title="DATABASE_PATH">
-    **Default:** `./data/vinihotel.db`
+    **Valor predeterminado:** `./data/vinihotel.db`
 
-    File path to the SQLite database, relative to the `backend/` directory. The `initializeDatabase()` function in `src/utils/database.js` opens or creates this file on first run — you do not need to create it manually. The `backend/data/` directory is also created automatically if it does not exist.
+    Ruta al archivo de la base de datos SQLite, relativa al directorio `backend/`. La función `initializeDatabase()` en `src/utils/database.js` abre o crea este archivo en la primera ejecución — no necesitas crearlo manualmente. El directorio `backend/data/` también se crea automáticamente si no existe.
   </Accordion>
 
   <Accordion title="JWT_SECRET">
-    **Required** — no safe default in production.
+    **Obligatorio** — no hay un valor seguro por defecto en producción.
 
-    The secret key used to sign and verify JWT tokens in `src/middleware/auth.js`. The code falls back to `'your_super_secret_jwt_key_change_this'` when the variable is missing, but this fallback value is public and must never be used in production.
+    La clave secreta utilizada para firmar y verificar los tokens JWT en `src/middleware/auth.js`. El código usa como respaldo `'your_super_secret_jwt_key_change_this'` cuando la variable no está definida, pero este valor de respaldo es público y nunca debe usarse en producción.
 
-    Generate a strong secret with:
+    Genera un secreto robusto con:
 
     ```bash
     node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
@@ -56,45 +56,45 @@ CORS_ORIGIN=http://localhost:5173
   </Accordion>
 
   <Accordion title="JWT_EXPIRE">
-    **Default:** `7d`
+    **Valor predeterminado:** `7d`
 
-    Controls how long issued tokens remain valid. Passed directly to `jsonwebtoken`'s `expiresIn` option:
+    Controla cuánto tiempo permanecen válidos los tokens emitidos. Se pasa directamente a la opción `expiresIn` de `jsonwebtoken`:
 
     ```js
     jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' })
     ```
 
-    Accepts any value the `jsonwebtoken` library supports: `60` (seconds), `'2h'`, `'30d'`, etc.
+    Acepta cualquier valor que soporte la biblioteca `jsonwebtoken`: `60` (segundos), `'2h'`, `'30d'`, etc.
   </Accordion>
 
   <Accordion title="NODE_ENV">
-    **Values:** `development` | `production`
+    **Valores:** `development` | `production`
 
-    Standard Node.js environment flag. Set to `production` when deploying to reduce verbose logging and enable production-level error handling. The Express error middleware uses this to determine response verbosity.
+    Indicador estándar del entorno de Node.js. Establécelo en `production` al desplegar para reducir el registro detallado y habilitar el manejo de errores a nivel de producción. El middleware de errores de Express usa este valor para determinar la verbosidad de las respuestas.
   </Accordion>
 
   <Accordion title="CORS_ORIGIN">
-    **Default:** `http://localhost:5173`
+    **Valor predeterminado:** `http://localhost:5173`
 
-    The frontend URL that the backend allows cross-origin requests from. Configured in `server.js` as:
+    La URL del frontend desde la que el backend permite solicitudes de origen cruzado. Configurado en `server.js` como:
 
     ```js
     const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
     app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
     ```
 
-    `http://localhost:5173` is the default Vite dev server address. Update this to your deployed frontend URL in production.
+    `http://localhost:5173` es la dirección predeterminada del servidor de desarrollo Vite. Actualiza esto a la URL de tu frontend desplegado en producción.
   </Accordion>
 </AccordionGroup>
 
-## Production Checklist
+## Lista de verificación para producción
 
 <Note>
-  The following changes are required before deploying ViniHotel to any public environment.
+  Los siguientes cambios son obligatorios antes de desplegar ViniHotel en cualquier entorno público.
 </Note>
 
-- **Change `JWT_SECRET`** to a cryptographically random value (64+ bytes). Anyone who knows this secret can issue valid tokens for any user.
-- **Set `NODE_ENV=production`** to suppress stack traces in error responses.
-- **Update `CORS_ORIGIN`** to your production frontend domain (e.g., `https://app.vinihotel.com`).
-- **Use HTTPS** for all traffic. JWT tokens transmitted over plain HTTP can be intercepted.
-- **Consider PostgreSQL** for production workloads. SQLite is suitable for development and low-traffic deployments, but the QUICKSTART.md notes that migrating to MySQL/PostgreSQL is recommended for scale.
+- **Cambia `JWT_SECRET`** por un valor criptográficamente aleatorio (64\+ bytes). Cualquiera que conozca este secreto puede emitir tokens válidos para cualquier usuario.
+- **Establece `NODE_ENV=production`** para suprimir trazas de pila en las respuestas de error.
+- **Actualiza `CORS_ORIGIN`** al dominio de tu frontend de producción (ej. `https://app.vinihotel.com`).
+- **Usa HTTPS** para todo el tráfico. Los tokens JWT transmitidos por HTTP simple pueden ser interceptados.
+- **Considera PostgreSQL** para cargas de trabajo en producción. SQLite es adecuado para desarrollo y despliegues de bajo tráfico, pero el QUICKSTART.md señala que se recomienda migrar a MySQL/PostgreSQL a escala.

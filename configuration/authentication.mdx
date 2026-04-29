@@ -1,15 +1,15 @@
 ---
-title: "Authentication with JWT in ViniHotel"
-description: "How to register, log in, and authenticate ViniHotel requests using JWT bearer tokens. Covers token storage, expiry, role encoding, and security best practices."
+title: "Autenticación con JWT en ViniHotel"
+description: "Cómo registrarse, iniciar sesión y autenticar solicitudes en ViniHotel usando tokens JWT Bearer. Cubre almacenamiento de tokens, expiración, codificación de roles y buenas prácticas de seguridad."
 ---
 
-ViniHotel uses JSON Web Tokens (JWT) for authentication. After a successful login or registration, the backend returns a signed token that the client includes as a `Bearer` header on every subsequent authenticated request. Tokens are valid for 7 days by default and are stored in `localStorage` by the frontend's `apiClient`.
+ViniHotel usa JSON Web Tokens (JWT) para la autenticación. Tras un inicio de sesión o registro exitoso, el backend devuelve un token firmado que el cliente incluye como encabezado `Bearer` en cada solicitud autenticada posterior. Los tokens son válidos por 7 días de forma predeterminada y son almacenados en `localStorage` por el `apiClient` del frontend.
 
-## Authentication Flow
+## Flujo de autenticación
 
 <Steps>
-  <Step title="Register a new account">
-    Send a `POST` request to `/api/auth/register` with your name, email, and password. A token is returned immediately — no separate login step needed after registration.
+  <Step title="Registra una nueva cuenta">
+    Envía una solicitud `POST` a `/api/auth/register` con tu nombre, correo electrónico y contraseña. Se devuelve un token de inmediato — no se necesita un paso de inicio de sesión separado después del registro.
 
     ```bash
     curl -X POST http://localhost:5000/api/auth/register \
@@ -22,9 +22,8 @@ ViniHotel uses JSON Web Tokens (JWT) for authentication. After a successful logi
       }'
     ```
   </Step>
-
-  <Step title="Log in to receive a token">
-    Send a `POST` request to `/api/auth/login` with your email and password. The password field is named `contrasena` in the API (the frontend `apiClient` maps `password` → `contrasena` automatically).
+  <Step title="Inicia sesión para recibir un token">
+    Envía una solicitud `POST` a `/api/auth/login` con tu correo electrónico y contraseña. El campo de contraseña se llama `contrasena` en la API (el `apiClient` del frontend mapea `password` → `contrasena` automáticamente).
 
     ```bash
     curl -X POST http://localhost:5000/api/auth/login \
@@ -32,7 +31,7 @@ ViniHotel uses JSON Web Tokens (JWT) for authentication. After a successful logi
       -d '{"email":"user@example.com","contrasena":"password123"}'
     ```
 
-    A successful response includes a `token` field:
+    Una respuesta exitosa incluye un campo `token`:
 
     ```json
     {
@@ -47,32 +46,29 @@ ViniHotel uses JSON Web Tokens (JWT) for authentication. After a successful logi
     }
     ```
   </Step>
-
-  <Step title="Store the token">
-    The frontend stores the token in `localStorage` under the key `token`. The `apiClient` reads this value on initialization so authenticated requests work across page refreshes:
+  <Step title="Almacena el token">
+    El frontend almacena el token en `localStorage` bajo la clave `token`. El `apiClient` lee este valor al inicializarse para que las solicitudes autenticadas funcionen entre recargas de página:
 
     ```ts
     this.token = localStorage.getItem('token');
     ```
   </Step>
-
-  <Step title="Include the token in requests">
-    All protected endpoints require an `Authorization` header with the `Bearer` scheme:
+  <Step title="Incluye el token en las solicitudes">
+    Todos los endpoints protegidos requieren un encabezado `Authorization` con el esquema `Bearer`:
 
     ```bash
     curl -H "Authorization: Bearer YOUR_TOKEN" \
       http://localhost:5000/api/auth/me
     ```
 
-    The `apiClient` adds this header automatically to every request when a token is stored:
+    El `apiClient` agrega este encabezado automáticamente a cada solicitud cuando hay un token almacenado:
 
     ```ts
     headers['Authorization'] = `Bearer ${this.token}`;
     ```
   </Step>
-
-  <Step title="Log out">
-    Logging out clears the token from both memory and `localStorage`. No server-side call is needed — the token simply stops being sent.
+  <Step title="Cierra sesión">
+    Cerrar sesión borra el token tanto de la memoria como de `localStorage`. No se necesita ninguna llamada al servidor — el token simplemente deja de enviarse.
 
     ```ts
     apiClient.clearToken();
@@ -81,15 +77,15 @@ ViniHotel uses JSON Web Tokens (JWT) for authentication. After a successful logi
   </Step>
 </Steps>
 
-## Token Expiry
+## Expiración del token
 
-Tokens expire after `JWT_EXPIRE` (default `7d`). When an expired or invalid token is sent, the backend returns:
+Los tokens expiran tras `JWT_EXPIRE` (predeterminado `7d`). Cuando se envía un token expirado o inválido, el backend responde con:
 
 ```json
 { "error": "Invalid token" }
 ```
 
-with HTTP status `401`. The frontend's `apiClient` intercepts `401` responses and redirects the user to `/login`:
+con el estado HTTP `401`. El `apiClient` del frontend intercepta las respuestas `401` y redirige al usuario a `/login`:
 
 ```ts
 if (response.status === 401) {
@@ -98,53 +94,55 @@ if (response.status === 401) {
 }
 ```
 
-## User Roles
+## Roles de usuario
 
-The user's role is encoded in the JWT payload alongside `userId`:
+El rol del usuario se codifica en el payload del JWT junto con `userId`:
 
 ```js
 jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' })
 ```
 
-Three roles exist:
+Existen tres roles:
 
-| Role | Access |
-|------|--------|
-| `client` | Default role. Can create and manage own bookings and invoices. |
-| `staff` | Can access staff-level routes in addition to client routes. |
-| `admin` | Full access, including hotel, room, and user management. |
+| Rol | Acceso |
+| --- | --- |
+| `client` | Rol predeterminado. Puede crear y gestionar sus propias reservas y facturas. |
+| `staff` | Puede acceder a las rutas de nivel de personal además de las rutas de cliente. |
+| `admin` | Acceso completo, incluyendo gestión de hoteles, habitaciones y usuarios. |
 
-Role is checked per-route by `staffMiddleware` and `adminMiddleware` in `src/middleware/auth.js`. Attempting to access a restricted route with insufficient privileges returns HTTP `403`.
+El rol se verifica por ruta mediante `staffMiddleware` y `adminMiddleware` en `src/middleware/auth.js`. Intentar acceder a una ruta restringida con privilegios insuficientes devuelve HTTP `403`.
 
-## Test Credentials
+## Credenciales de prueba
 
-The server seeds these accounts automatically on first start if they don't already exist:
+El servidor siembra estas cuentas automáticamente en el primer inicio si aún no existen:
 
 <CodeGroup>
-  ```text Client account
-  Email:    juan@example.com
-  Password: password123
-  Role:     client
-  ```
 
-  ```text Admin account
-  Email:    admin@example.com
-  Password: admin123
-  Role:     admin
-  ```
+```text Cuenta de cliente
+Email:    juan@example.com
+Password: password123
+Role:     client
+```
+
+```text Cuenta de administrador
+Email:    admin@example.com
+Password: admin123
+Role:     admin
+```
+
 </CodeGroup>
 
 <Note>
-  A second client account (`maria@example.com` / `password123`) is also seeded for testing multi-user scenarios.
+  También se siembra una segunda cuenta de cliente (`maria@example.com` / `password123`) para pruebas de escenarios multi-usuario.
 </Note>
 
-## Security Best Practices
+## Buenas prácticas de seguridad
 
 <Warning>
-  The default `JWT_SECRET` value (`your_super_secret_jwt_key_change_this`) is public. Anyone who knows this value can forge valid tokens for any user in your system. Always replace it before deploying.
+  El valor predeterminado de `JWT_SECRET` (`your_super_secret_jwt_key_change_this`) es público. Cualquiera que conozca este valor puede falsificar tokens válidos para cualquier usuario de tu sistema. Siempre reemplázalo antes de desplegar.
 </Warning>
 
-- **Change `JWT_SECRET`** to a random 64-byte hex string before going to production. See the [Environment Variables](/configuration/environment-variables) page for a generation command.
-- **Use HTTPS** in production. JWT tokens sent over plain HTTP can be intercepted and replayed.
-- **Never store passwords in the frontend.** Passwords are hashed with bcrypt on the backend before storage — the plaintext never persists.
-- **Never expose tokens in URLs.** Always pass tokens in the `Authorization` header, not as query parameters.
+- **Cambia `JWT_SECRET`** por una cadena hexadecimal aleatoria de 64 bytes antes de pasar a producción. Consulta la página de [Variables de Entorno](/configuration/environment-variables) para el comando de generación.
+- **Usa HTTPS** en producción. Los tokens JWT enviados por HTTP simple pueden ser interceptados y reproducidos.
+- **Nunca almacenes contraseñas en el frontend.** Las contraseñas se hashean con bcrypt en el backend antes del almacenamiento — el texto plano nunca persiste.
+- **Nunca expongas tokens en URLs.** Siempre pasa los tokens en el encabezado `Authorization`, no como parámetros de consulta.

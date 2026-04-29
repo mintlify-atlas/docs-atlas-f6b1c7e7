@@ -1,97 +1,102 @@
 ---
-title: "Hotel Operations Reports and Analytics"
-description: "View booking statistics, revenue totals, occupancy rates, and per-hotel performance analytics from the ViniHotel reports dashboard."
+title: "Informes y Analíticas de Operaciones Hoteleras"
+description: "Consulta estadísticas de reservas, totales de ingresos, tasas de ocupación y analíticas de rendimiento por hotel desde el panel de informes de ViniHotel."
 ---
 
-The reports page gives administrators a consolidated view of the chain's financial and operational performance. It is accessible at the `/reports` route and derives all metrics in real time from the bookings and invoices data. There are no manual refresh controls — figures update automatically as bookings are created, modified, or cancelled. A single **Exportar Reporte** button is available in the page header for downloading the current report data.
+La página de informes ofrece a los administradores una vista consolidada del rendimiento financiero y operativo de la cadena. Es accesible en la ruta `/reports` y deriva todas las métricas en tiempo real a partir de los datos de reservas y facturas. No hay controles de actualización manual — las cifras se actualizan automáticamente a medida que las reservas se crean, modifican o cancelan. Un único botón **Exportar Reporte** está disponible en el encabezado de la página para descargar los datos del informe actual.
 
 <Warning>
-  The reports dashboard is restricted to users with the **admin** role.
+  El panel de informes está restringido a usuarios con el rol **admin**.
 </Warning>
 
-## Key performance indicators
+## Indicadores clave de rendimiento
 
-Four KPI cards appear at the top of the page, providing an at-a-glance summary of overall performance across all hotels.
+Cuatro tarjetas de KPI aparecen en la parte superior de la página, proporcionando un resumen general del rendimiento en todos los hoteles.
 
 <CardGroup cols={2}>
   <Card title="Ingresos Totales" icon="dollar-sign">
-    The sum of all invoice `total` values (subtotal + taxes). Calculated as `invoices.reduce((sum, inv) => sum + inv.total, 0)`. Displayed in green. Labeled **Todos los tiempos** to indicate it is a cumulative, all-time figure.
+    La suma de todos los valores `total` de las facturas (subtotal \+ impuestos). Calculado como `invoices.reduce((sum, inv) => sum + inv.total, 0)`. Se muestra en verde. Etiquetado como **Todos los tiempos** para indicar que es una cifra acumulada histórica.
   </Card>
+
   <Card title="Total Reservas" icon="calendar">
-    The total count of all bookings in the system regardless of status. Also shows the number of currently **confirmed** active bookings as a sub-label.
+    El conteo total de todas las reservas en el sistema sin importar su estado. También muestra el número de reservas activas actualmente **confirmadas** como subetiqueta.
   </Card>
+
   <Card title="Tasa de Ocupación" icon="chart-bar">
-    Calculated as `(confirmedBookings + completedBookings) / totalBookings * 100`. Expressed as a percentage with one decimal place. The sub-label shows the count of completed bookings.
+    Calculada como `(confirmedBookings + completedBookings) / totalBookings * 100`. Expresada como porcentaje con un decimal. La subetiqueta muestra el conteo de reservas completadas.
   </Card>
+
   <Card title="Valor Promedio" icon="users">
-    Average revenue per booking: `totalRevenue / totalBookings`. Expressed in USD with two decimal places. Labeled **Por reserva**.
+    Ingreso promedio por reserva: `totalRevenue / totalBookings`. Expresado en USD con dos decimales. Etiquetado como **Por reserva**.
   </Card>
 </CardGroup>
 
-## Booking status distribution
+## Distribución por estado de reservas
 
-The **Estado de Reservas** panel shows the current breakdown of all bookings by status, with a count badge and percentage for each category.
+El panel **Estado de Reservas** muestra el desglose actual de todas las reservas por estado, con una insignia de conteo y porcentaje para cada categoría.
 
-| Status | Description |
-|--------|-------------|
-| Confirmadas | Bookings with `status: 'confirmed'` — paid and upcoming. |
-| Completadas | Bookings with `status: 'completed'` — stay finished, guest checked out. |
-| Canceladas | Bookings with `status: 'cancelled'` — reservation was cancelled before or during the stay. |
+| Estado | Descripción |
+| --- | --- |
+| Confirmadas | Reservas con `status: 'confirmed'` — pagadas y próximas. |
+| Completadas | Reservas con `status: 'completed'` — estancia finalizada, huésped con checkout. |
+| Canceladas | Reservas con `status: 'cancelled'` — reserva cancelada antes o durante la estancia. |
 
 <Note>
-  Bookings in `pending` and `checked-in` status are tracked in the booking management panel but are not separately broken out in the reports status distribution. They are included in the **Total Reservas** count and contribute to the occupancy rate through the `confirmed` + `completed` formula.
+  Las reservas con estado `pending` y `checked-in` se rastrean en el panel de gestión de reservas pero no se desglosan por separado en la distribución de estados del informe. Se incluyen en el conteo de **Total Reservas** y contribuyen a la tasa de ocupación a través de la fórmula `confirmed` \+ `completed`.
 </Note>
 
-## Hotel performance ranking
+## Ranking de rendimiento por hotel
 
-The **Rendimiento por Hotel** panel ranks the top 5 hotels in the chain by booking count. For each hotel it shows:
+El panel **Rendimiento por Hotel** clasifica los 5 hoteles principales de la cadena por número de reservas. Para cada hotel muestra:
 
-- Hotel name
-- Total number of bookings (`data.count`)
-- A proportional bar chart showing that hotel's share of all bookings (`count / totalBookings * 100%`)
-- Total revenue generated by the hotel (`data.revenue` in USD)
+- Nombre del hotel
+- Número total de reservas (`data.count`)
+- Un gráfico de barras proporcional que muestra la participación de ese hotel en el total de reservas (`count / totalBookings * 100%`)
+- Ingresos totales generados por el hotel (`data.revenue` en USD)
 
-Hotels are sorted descending by booking count, so the busiest property always appears first. This panel is derived by grouping bookings on `booking.hotelName`.
+Los hoteles están ordenados de forma descendente por número de reservas, por lo que la propiedad más activa siempre aparece primero. Este panel se deriva agrupando las reservas por `booking.hotelName`.
 
-## Monthly revenue trend
+## Tendencia de ingresos mensuales
 
-The **Ingresos Mensuales** panel breaks down bookings and revenue by calendar month. Each month row displays:
+El panel **Ingresos Mensuales** desglosa las reservas e ingresos por mes calendario. Cada fila de mes muestra:
 
-- Month and year label (e.g. `abril 2026`)
-- A badge showing the booking count for that month
-- The revenue total for that month in USD
-- A gradient progress bar (`green → blue`) proportional to that month's share of total all-time revenue
+- Etiqueta de mes y año (ej. `abril 2026`)
+- Una insignia con el conteo de reservas de ese mes
+- El total de ingresos de ese mes en USD
+- Una barra de progreso con gradiente (`verde → azul`) proporcional a la participación de ese mes en el total de ingresos históricos
 
-This section is built by grouping bookings on `new Date(booking.createdAt).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })`, so months are labeled in Spanish locale.
+Esta sección se construye agrupando las reservas por `new Date(booking.createdAt).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })`, por lo que los meses se etiquetan en el idioma español.
 
-## Additional key indicators
+## Indicadores clave adicionales
 
-Three supplementary metric cards appear below the monthly trend section.
+Tres tarjetas de métricas suplementarias aparecen debajo de la sección de tendencia mensual.
 
 <CardGroup cols={3}>
   <Card title="Tasa de Cancelación" icon="x-circle">
-    `cancelledBookings / totalBookings * 100`. Shows the percentage of bookings that were cancelled, with the raw counts displayed as a sub-label. Displayed in red.
+    `cancelledBookings / totalBookings * 100`. Muestra el porcentaje de reservas que fueron canceladas, con los conteos en bruto como subetiqueta. Se muestra en rojo.
   </Card>
+
   <Card title="Tasa de Conversión" icon="check-circle">
-    `(confirmedBookings + completedBookings) / totalBookings * 100`. Represents the share of bookings that reached a successful outcome. Displayed in green. Labeled **Reservas exitosas**.
+    `(confirmedBookings + completedBookings) / totalBookings * 100`. Representa la proporción de reservas que alcanzaron un resultado exitoso. Se muestra en verde. Etiquetado como **Reservas exitosas**.
   </Card>
+
   <Card title="RevPAR" icon="trending-up">
-    Revenue Per Available Room: `averageBookingValue * (occupancyRate / 100)`. A standard hotel industry metric for evaluating room revenue efficiency. Displayed in blue. Labeled **Indicador de rendimiento**.
+    Ingreso Por Habitación Disponible: `averageBookingValue * (occupancyRate / 100)`. Una métrica estándar de la industria hotelera para evaluar la eficiencia de los ingresos por habitación. Se muestra en azul. Etiquetado como **Indicador de rendimiento**.
   </Card>
 </CardGroup>
 
-## Revenue data source
+## Fuente de datos de ingresos
 
-Revenue figures in the reports panel are drawn from the `invoices` table, not directly from `bookings.totalPrice`. Each invoice stores:
+Las cifras de ingresos en el panel de informes se obtienen de la tabla `invoices`, no directamente de `bookings.totalPrice`. Cada factura almacena:
 
-- `subtotal` — the booking amount before taxes
-- `taxes` — the applied tax or IVA amount
-- `total` — the final charged amount (`subtotal + taxes`)
+- `subtotal` — el monto de la reserva antes de impuestos
+- `taxes` — el monto de impuesto o IVA aplicado
+- `total` — el monto final cobrado (`subtotal + taxes`)
 
-This means the **Ingresos Totales** figure reflects actual invoiced amounts and accounts for any additional charges stored in the `additionalCharges` JSON column (e.g. resort fees, parking, service charges).
+Esto significa que la cifra de **Ingresos Totales** refleja los montos facturados reales y considera cualquier cargo adicional almacenado en la columna JSON `additionalCharges` (ej. tarifas de resort, estacionamiento, cargos por servicio).
 
 ```sql
--- Revenue by hotel (underlying query pattern)
+-- Ingresos por hotel (patrón de consulta subyacente)
 SELECT h.nombre, SUM(i.total) as ingresos 
 FROM invoices i 
 JOIN bookings b ON i.bookingId = b.id 
@@ -100,9 +105,9 @@ JOIN hoteles h ON r.hotelId = h.idHotel
 GROUP BY h.idHotel;
 ```
 
-## Most frequent guests
+## Huéspedes más frecuentes
 
-While the reports UI surfaces per-hotel booking counts, the underlying database supports identifying most frequent guests by booking volume. This query pattern is available for custom reporting:
+Aunque la interfaz del informe muestra los conteos de reservas por hotel, la base de datos subyacente permite identificar a los huéspedes más frecuentes por volumen de reservas. Este patrón de consulta está disponible para informes personalizados:
 
 ```sql
 SELECT u.nombre, u.apellido, COUNT(b.id) as reservas 
@@ -115,5 +120,5 @@ LIMIT 10;
 ```
 
 <Tip>
-  Use the **Exportar Reporte** button in the page header to download the current report snapshot. This is useful for sharing performance summaries with hotel managers or for archiving monthly data.
+  Usa el botón **Exportar Reporte** en el encabezado de la página para descargar la instantánea del informe actual. Esto es útil para compartir resúmenes de rendimiento con los gerentes de hotel o para archivar datos mensuales.
 </Tip>

@@ -1,47 +1,50 @@
 ---
-title: "Housekeeping and Room Status Management"
-description: "Monitor and update room status across ViniHotel properties. Manage available, occupied, cleaning, and maintenance states from the staff housekeeping dashboard."
+title: "Housekeeping y Gestión del Estado de Habitaciones"
+description: "Monitorea y actualiza el estado de las habitaciones en las propiedades de ViniHotel. Gestiona los estados disponible, ocupado, limpieza y mantenimiento desde el panel de housekeeping del personal."
 ---
 
-The housekeeping dashboard provides a live view of every room's current operational status across all hotels in the chain. It is accessible at the `/housekeeping` route and is designed for day-to-day use by housekeeping staff and front-desk receptionists. The dashboard is organized by hotel, showing each room as a status card that can be updated with a single click. It also includes an inline form for adding new rooms directly without leaving the page.
+El panel de housekeeping ofrece una vista en tiempo real del estado operativo actual de cada habitación en todos los hoteles de la cadena. Es accesible en la ruta `/housekeeping` y está diseñado para el uso diario del personal de limpieza y los recepcionistas. El panel está organizado por hotel, mostrando cada habitación como una tarjeta de estado que puede actualizarse con un solo clic. También incluye un formulario integrado para agregar nuevas habitaciones directamente sin salir de la página.
 
 <Note>
-  The housekeeping panel is accessible to users with the **staff** and **admin** roles.
+  El panel de housekeeping es accesible para usuarios con los roles **staff** y **admin**.
 </Note>
 
-## Dashboard overview
+## Resumen del panel
 
-At the top of the page, four summary cards show the live count of rooms in each state across all properties:
+En la parte superior de la página, cuatro tarjetas de resumen muestran el conteo en tiempo real de habitaciones en cada estado en todas las propiedades:
 
 <CardGroup cols={4}>
   <Card title="Disponibles" icon="check-circle">
-    Rooms that are clean, vacant, and ready to accept a new guest or booking. Shown with a green border.
+    Habitaciones limpias, desocupadas y listas para recibir un nuevo huésped o reserva. Se muestran con borde verde.
   </Card>
+
   <Card title="Ocupadas" icon="clock">
-    Rooms with a guest currently checked in. Shown with a blue border.
+    Habitaciones con un huésped actualmente con check-in. Se muestran con borde azul.
   </Card>
+
   <Card title="En Limpieza" icon="sparkles">
-    Rooms actively being cleaned after a checkout. Shown with a yellow border. Labeled **Requieren atención**.
+    Habitaciones en proceso de limpieza tras un checkout. Se muestran con borde amarillo. Etiquetadas como **Requieren atención**.
   </Card>
+
   <Card title="Mantenimiento" icon="wrench">
-    Rooms out of service for repairs. Shown with a red border. Labeled **Fuera de servicio**.
+    Habitaciones fuera de servicio por reparaciones. Se muestran con borde rojo. Etiquetadas como **Fuera de servicio**.
   </Card>
 </CardGroup>
 
-Below the summary, a search bar and status filter let you narrow the room list by name or by status. Rooms are then grouped under their hotel name, with the total room count for each property shown on the right.
+Debajo del resumen, una barra de búsqueda y un filtro de estado permiten acotar la lista de habitaciones por nombre o por estado. Las habitaciones se agrupan bajo el nombre de su hotel, con el total de habitaciones de cada propiedad mostrado a la derecha.
 
-## Room statuses
+## Estados de las habitaciones
 
-The housekeeping panel uses four real-time statuses for room cards. These correspond to the `status` field on the `rooms` table and the `RoomStatus` type in the frontend.
+El panel de housekeeping usa cuatro estados en tiempo real para las tarjetas de habitación. Estos corresponden al campo `status` de la tabla `rooms` y al tipo `RoomStatus` en el frontend.
 
-| Status | Label | Meaning |
-|--------|-------|---------|
-| `available` | Disponible | Room is clean and ready. Guests can be checked in and new bookings are accepted. |
-| `occupied` | Ocupado | A guest is currently in the room. Check-out is available; check-in and new bookings are blocked. |
-| `cleaning` | Limpieza | Room is being cleaned post-checkout. All booking and check-in actions are blocked until status returns to `available`. |
-| `maintenance` | Mantenimiento | Room is undergoing repairs or is otherwise unfit for guests. No bookings or check-ins permitted. |
+| Estado | Etiqueta | Significado |
+| --- | --- | --- |
+| `available` | Disponible | La habitación está limpia y lista. Se puede hacer check-in de huéspedes y se aceptan nuevas reservas. |
+| `occupied` | Ocupado | Hay un huésped actualmente en la habitación. El checkout está disponible; el check-in y las nuevas reservas están bloqueados. |
+| `cleaning` | Limpieza | La habitación está siendo limpiada tras el checkout. Todas las acciones de reserva y check-in están bloqueadas hasta que el estado vuelva a `available`. |
+| `maintenance` | Mantenimiento | La habitación está en reparación o no es apta para huéspedes. No se permiten reservas ni check-ins. |
 
-Status constraints are enforced at the API level via `getRoomStatusConstraints(status)` in `roomModel.js`:
+Las restricciones de estado se aplican a nivel de API mediante `getRoomStatusConstraints(status)` en `roomModel.js`:
 
 ```js
 // roomModel.js
@@ -54,71 +57,71 @@ const constraints = {
 };
 ```
 
-## Updating a room status
+## Actualizar el estado de una habitación
 
-Each room card shows four action buttons: **Disponible**, **Ocupado**, **Limpieza**, and **Mantenimiento**. The active status button appears highlighted. Clicking any button immediately updates both the in-memory `roomStatuses` state and the persisted `rooms` store.
+Cada tarjeta de habitación muestra cuatro botones de acción: **Disponible**, **Ocupado**, **Limpieza** y **Mantenimiento**. El botón del estado activo aparece resaltado. Al hacer clic en cualquier botón se actualiza inmediatamente tanto el estado en memoria `roomStatuses` como el almacén persistente `rooms`.
 
 <Steps>
-  <Step title="Locate the room">
-    Use the search bar to filter by room name, or use the **Estado** dropdown to show only rooms in a specific status (e.g. filter to **En limpieza** to find all rooms awaiting sign-off).
+  <Step title="Localiza la habitación">
+    Usa la barra de búsqueda para filtrar por nombre de habitación, o usa el menú desplegable **Estado** para mostrar solo las habitaciones en un estado específico (ej. filtra por **En limpieza** para encontrar todas las habitaciones que esperan supervisión).
   </Step>
-  <Step title="Review the current status">
-    Each card displays the room name, current status badge, and the timestamp of the last status change (shown as a time in `HH:MM` format under the room name).
+  <Step title="Revisa el estado actual">
+    Cada tarjeta muestra el nombre de la habitación, la insignia del estado actual y la marca de tiempo del último cambio de estado (mostrada en formato `HH:MM` debajo del nombre de la habitación).
   </Step>
-  <Step title="Set the new status">
-    Click one of the four status buttons on the card. The card border color and badge update instantly to reflect the new state.
+  <Step title="Establece el nuevo estado">
+    Haz clic en uno de los cuatro botones de estado de la tarjeta. El color del borde de la tarjeta y la insignia se actualizan instantáneamente para reflejar el nuevo estado.
   </Step>
-  <Step title="Confirm the room is ready">
-    After cleaning, click **Disponible** to mark the room ready for the next guest. This re-enables booking and check-in for that room.
+  <Step title="Confirma que la habitación está lista">
+    Después de la limpieza, haz clic en **Disponible** para marcar la habitación como lista para el próximo huésped. Esto vuelve a habilitar la reserva y el check-in para esa habitación.
   </Step>
 </Steps>
 
-## Post-checkout cleaning workflow
+## Flujo de limpieza post-checkout
 
-The typical room turnaround sequence after a guest checks out is:
+La secuencia típica de rotación de habitación después de que un huésped hace el checkout es:
 
 <Steps>
-  <Step title="Guest checks out">
-    Staff processes the checkout in the booking management panel. The booking status transitions to `completed`.
+  <Step title="El huésped hace el checkout">
+    El personal procesa el checkout en el panel de gestión de reservas. El estado de la reserva cambia a `completed`.
   </Step>
-  <Step title="Mark room as Limpieza">
-    In the housekeeping dashboard, find the room and click **Limpieza**. This flags the room as needing attention and prevents new check-ins.
+  <Step title="Marca la habitación como Limpieza">
+    En el panel de housekeeping, encuentra la habitación y haz clic en **Limpieza**. Esto marca la habitación como pendiente de atención y previene nuevos check-ins.
   </Step>
-  <Step title="Clean the room">
-    Housekeeping staff attend to the room — linen change, restocking, and inspection.
+  <Step title="Limpia la habitación">
+    El personal de housekeeping atiende la habitación — cambio de ropa de cama, reposición e inspección.
   </Step>
-  <Step title="Mark room as Disponible">
-    Once cleaning is complete, click **Disponible** on the room card. The room is now bookable and can accept the next check-in.
+  <Step title="Marca la habitación como Disponible">
+    Una vez completada la limpieza, haz clic en **Disponible** en la tarjeta de la habitación. La habitación ya puede ser reservada y acepta el próximo check-in.
   </Step>
 </Steps>
 
 <Tip>
-  Use the **En Limpieza** status filter to get a focused view of all rooms currently awaiting cleaning across the property. This helps prioritize turnaround during high-occupancy periods.
+  Usa el filtro de estado **En Limpieza** para obtener una vista enfocada de todas las habitaciones actualmente en espera de limpieza en la propiedad. Esto ayuda a priorizar la rotación durante períodos de alta ocupación.
 </Tip>
 
-## Adding a new room
+## Agregar una nueva habitación
 
-The housekeeping page includes a **Añadir habitación** section that allows rooms to be created without navigating to a separate admin page.
+La página de housekeeping incluye una sección **Añadir habitación** que permite crear habitaciones sin necesidad de navegar a una página de administración separada.
 
 <Steps>
-  <Step title="Select the hotel">
-    Choose the target hotel from the **Selecciona hotel** dropdown. The list is populated from all registered hotels.
+  <Step title="Selecciona el hotel">
+    Elige el hotel de destino en el menú desplegable **Selecciona hotel**. La lista se rellena con todos los hoteles registrados.
   </Step>
-  <Step title="Fill in room details">
-    Enter the room **Nombre habitación**, **Tipo** (e.g. `Doble`, `Suite`), **Precio** (per night in USD), **Capacidad** (max guests), and **Disponibles** (stock count).
+  <Step title="Completa los detalles de la habitación">
+    Ingresa el **Nombre habitación**, **Tipo** (ej. `Doble`, `Suite`), **Precio** (por noche en USD), **Capacidad** (máximo de huéspedes) y **Disponibles** (conteo de unidades).
   </Step>
-  <Step title="Click Agregar habitación">
-    The new room is created with `status: 'available'` and default amenities `["Cama King", "WiFi"]`. It immediately appears in the hotel's room list on the dashboard.
+  <Step title="Haz clic en Agregar habitación">
+    La nueva habitación se crea con `status: 'available'` y los servicios predeterminados `["Cama King", "WiFi"]`. Aparece inmediatamente en la lista de habitaciones del hotel en el panel.
   </Step>
 </Steps>
 
 <Note>
-  Rooms added from the housekeeping panel use a timestamp-based ID (`r${Date.now()}`) and a default room image. For full control over all fields including a custom image URL and amenity list, use the rooms API directly with an admin account.
+  Las habitaciones añadidas desde el panel de housekeeping usan un ID basado en marca de tiempo (`r${Date.now()}`) y una imagen de habitación predeterminada. Para control total sobre todos los campos, incluyendo una URL de imagen personalizada y lista de servicios, usa la API de habitaciones directamente con una cuenta de administrador.
 </Note>
 
-## Best practices
+## Buenas prácticas
 
-- Set rooms to **Limpieza** immediately after a checkout is processed so the status reflects reality for other staff checking the dashboard.
-- Use **Mantenimiento** for any room that is not safe or ready for guests, even if cleaning is not the issue — this blocks accidental bookings.
-- Check the summary cards at the start of each shift to get a quick picture of room availability before the front desk begins taking walk-in requests.
-- Resolve **En Limpieza** rooms promptly during high-demand periods — rooms stuck in `cleaning` status cannot be booked or checked into, directly impacting occupancy.
+- Establece las habitaciones en **Limpieza** inmediatamente después de procesar un checkout para que el estado refleje la realidad para el resto del personal que consulta el panel.
+- Usa **Mantenimiento** para cualquier habitación que no sea segura o no esté lista para huéspedes, aunque la limpieza no sea el problema — esto bloquea reservas accidentales.
+- Revisa las tarjetas de resumen al inicio de cada turno para obtener una visión rápida de la disponibilidad de habitaciones antes de que la recepción comience a atender solicitudes de entrada directa.
+- Resuelve las habitaciones **En Limpieza** con prontitud durante períodos de alta demanda — las habitaciones en estado `cleaning` no pueden ser reservadas ni recibir check-in, lo que impacta directamente la ocupación.

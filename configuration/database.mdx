@@ -1,80 +1,80 @@
 ---
-title: "ViniHotel Database Schema and Structure"
-description: "Complete reference for the ViniHotel SQLite database: all 7 tables, their columns, foreign key relationships, indexes, and useful SQL queries."
+title: "Esquema y Estructura de la Base de Datos de ViniHotel"
+description: "Referencia completa de la base de datos SQLite de ViniHotel: las 7 tablas, sus columnas, relaciones de clave foránea, índices y consultas SQL útiles."
 ---
 
-ViniHotel uses SQLite3 as its database, stored at `backend/data/vinihotel.db`. The file and its parent directory are created automatically the first time the server starts — you never need to create them manually. All table definitions live in `backend/src/utils/database.js` and are applied via `CREATE TABLE IF NOT EXISTS` statements inside the `initializeDatabase()` function called at server boot.
+ViniHotel usa SQLite3 como base de datos, almacenada en `backend/data/vinihotel.db`. El archivo y su directorio padre se crean automáticamente la primera vez que arranca el servidor — nunca necesitas crearlos manualmente. Todas las definiciones de tablas viven en `backend/src/utils/database.js` y se aplican mediante sentencias `CREATE TABLE IF NOT EXISTS` dentro de la función `initializeDatabase()` que se llama al iniciar el servidor.
 
-## Database Location
+## Ubicación de la base de datos
 
 ```text
 backend/
 └── data/
-    └── vinihotel.db   ← SQLite file, auto-created on first run
+    └── vinihotel.db   ← archivo SQLite, creado automáticamente en la primera ejecución
 ```
 
 <Note>
-  To inspect the database directly, use [DB Browser for SQLite](https://sqlitebrowser.org/), the VS Code "SQLite" extension (`ms-vscode.sqlite`), or the command-line tool: `sqlite3 backend/data/vinihotel.db`.
+  Para inspeccionar la base de datos directamente, usa [DB Browser for SQLite](https://sqlitebrowser.org/), la extensión "SQLite" de VS Code (`ms-vscode.sqlite`), o la herramienta de línea de comandos: `sqlite3 backend/data/vinihotel.db`.
 </Note>
 
-## Tables
+## Tablas
 
 ### usuarios
 
-Stores all user accounts — clients, staff members, and admins.
+Almacena todas las cuentas de usuario — clientes, miembros del personal y administradores.
 
-| Column | Type | Constraint | Description |
-|--------|------|------------|-------------|
-| `idUsuario` | INTEGER | PK, AUTOINCREMENT | Unique user ID |
-| `nombre` | TEXT | NOT NULL | First name |
-| `apellido` | TEXT | NOT NULL | Last name |
-| `email` | TEXT | NOT NULL, UNIQUE | Login email |
-| `contrasena` | TEXT | NOT NULL | bcrypt-hashed password |
+| Columna | Tipo | Restricción | Descripción |
+| --- | --- | --- | --- |
+| `idUsuario` | INTEGER | PK, AUTOINCREMENT | ID único de usuario |
+| `nombre` | TEXT | NOT NULL | Nombre |
+| `apellido` | TEXT | NOT NULL | Apellido |
+| `email` | TEXT | NOT NULL, UNIQUE | Correo de inicio de sesión |
+| `contrasena` | TEXT | NOT NULL | Contraseña hasheada con bcrypt |
 | `rol` | TEXT | DEFAULT `'client'` | `client` / `staff` / `admin` |
-| `phone` | TEXT | — | Contact phone number |
-| `address` | TEXT | — | Address |
-| `dateOfBirth` | DATE | — | Date of birth |
-| `nationality` | TEXT | — | Nationality |
-| `documentId` | TEXT | — | Passport or ID number |
-| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
-| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+| `phone` | TEXT | — | Número de teléfono de contacto |
+| `address` | TEXT | — | Dirección |
+| `dateOfBirth` | DATE | — | Fecha de nacimiento |
+| `nationality` | TEXT | — | Nacionalidad |
+| `documentId` | TEXT | — | Número de pasaporte o identificación |
+| `createdAt` | DATETIME | DEFAULT NOW | Hora de creación del registro |
+| `updatedAt` | DATETIME | DEFAULT NOW | Hora de última actualización |
 
 ---
 
 ### clientes
 
-Holds client-specific profile data in a one-to-one relationship with `usuarios`.
+Contiene datos de perfil específicos del cliente en una relación uno a uno con `usuarios`.
 
-| Column | Type | Constraint | Description |
-|--------|------|------------|-------------|
-| `idCliente` | INTEGER | PK, AUTOINCREMENT | Unique client ID |
-| `telefono` | TEXT | — | Client phone number |
-| `documentoIdentidad` | TEXT | — | Identity document |
-| `idUsuario` | INTEGER | FK, UNIQUE | References `usuarios(idUsuario)` |
-| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
-| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+| Columna | Tipo | Restricción | Descripción |
+| --- | --- | --- | --- |
+| `idCliente` | INTEGER | PK, AUTOINCREMENT | ID único de cliente |
+| `telefono` | TEXT | — | Número de teléfono del cliente |
+| `documentoIdentidad` | TEXT | — | Documento de identidad |
+| `idUsuario` | INTEGER | FK, UNIQUE | Referencia a `usuarios(idUsuario)` |
+| `createdAt` | DATETIME | DEFAULT NOW | Hora de creación del registro |
+| `updatedAt` | DATETIME | DEFAULT NOW | Hora de última actualización |
 
-Deleting a `usuarios` row cascades and removes the linked `clientes` row automatically (`ON DELETE CASCADE`).
+Eliminar una fila de `usuarios` elimina en cascada la fila vinculada de `clientes` automáticamente (`ON DELETE CASCADE`).
 
 ---
 
 ### hoteles
 
-Stores hotel listings.
+Almacena los listados de hoteles.
 
-| Column | Type | Constraint | Description |
-|--------|------|------------|-------------|
+| Columna | Tipo | Restricción | Descripción |
+| --- | --- | --- | --- |
 | `idHotel` | TEXT | PK | UUID |
-| `nombre` | TEXT | NOT NULL | Hotel name |
-| `description` | TEXT | NOT NULL | Full description |
-| `location` | TEXT | NOT NULL | Geographic location |
-| `image` | TEXT | NOT NULL | URL of the main image |
-| `rating` | REAL | NOT NULL | Rating from 0 to 5 |
-| `amenities` | TEXT | NOT NULL | JSON array of amenities |
-| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
-| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+| `nombre` | TEXT | NOT NULL | Nombre del hotel |
+| `description` | TEXT | NOT NULL | Descripción completa |
+| `location` | TEXT | NOT NULL | Ubicación geográfica |
+| `image` | TEXT | NOT NULL | URL de la imagen principal |
+| `rating` | REAL | NOT NULL | Calificación de 0 a 5 |
+| `amenities` | TEXT | NOT NULL | Array JSON de servicios |
+| `createdAt` | DATETIME | DEFAULT NOW | Hora de creación del registro |
+| `updatedAt` | DATETIME | DEFAULT NOW | Hora de última actualización |
 
-The `amenities` field is stored as a JSON array:
+El campo `amenities` se almacena como array JSON:
 
 ```json
 ["WiFi", "Piscina", "Gym", "Spa", "Restaurante 24/7", "Servicio de habitaciones"]
@@ -84,66 +84,66 @@ The `amenities` field is stored as a JSON array:
 
 ### rooms
 
-Hotel rooms, each belonging to a hotel.
+Habitaciones del hotel, cada una perteneciente a un hotel.
 
-| Column | Type | Constraint | Description |
-|--------|------|------------|-------------|
+| Columna | Tipo | Restricción | Descripción |
+| --- | --- | --- | --- |
 | `id` | TEXT | PK | UUID |
-| `hotelId` | TEXT | FK NOT NULL | References `hoteles(idHotel)` |
-| `name` | TEXT | NOT NULL | Room name (e.g., Suite Presidencial) |
+| `hotelId` | TEXT | FK NOT NULL | Referencia a `hoteles(idHotel)` |
+| `name` | TEXT | NOT NULL | Nombre de la habitación (ej. Suite Presidencial) |
 | `type` | TEXT | NOT NULL | `standard` / `deluxe` / `suite` / etc. |
-| `price` | REAL | NOT NULL | Price per night in USD |
-| `capacity` | INTEGER | NOT NULL | Maximum number of guests |
-| `image` | TEXT | NOT NULL | URL of the room image |
-| `amenities` | TEXT | NOT NULL | JSON array of room amenities |
-| `available` | INTEGER | DEFAULT `1` | Number of units available (stock) |
+| `price` | REAL | NOT NULL | Precio por noche en USD |
+| `capacity` | INTEGER | NOT NULL | Número máximo de huéspedes |
+| `image` | TEXT | NOT NULL | URL de la imagen de la habitación |
+| `amenities` | TEXT | NOT NULL | Array JSON de servicios de la habitación |
+| `available` | INTEGER | DEFAULT `1` | Número de unidades disponibles (stock) |
 | `status` | TEXT | DEFAULT `'available'` | `available` / `occupied` / `maintenance` / `cleaning` / `unavailable` |
-| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
-| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+| `createdAt` | DATETIME | DEFAULT NOW | Hora de creación del registro |
+| `updatedAt` | DATETIME | DEFAULT NOW | Hora de última actualización |
 
 ---
 
 ### bookings
 
-Reservation records linking a room to a client.
+Registros de reservas que vinculan una habitación con un cliente.
 
-| Column | Type | Constraint | Description |
-|--------|------|------------|-------------|
+| Columna | Tipo | Restricción | Descripción |
+| --- | --- | --- | --- |
 | `id` | TEXT | PK | UUID |
-| `roomId` | TEXT | FK NOT NULL | References `rooms(id)` |
-| `idCliente` | INTEGER | FK NOT NULL | References `clientes(idCliente)` |
-| `checkIn` | DATE | NOT NULL | Check-in date |
-| `checkOut` | DATE | NOT NULL | Check-out date |
-| `guests` | INTEGER | NOT NULL | Number of guests |
-| `totalPrice` | REAL | NOT NULL | Total price in USD |
+| `roomId` | TEXT | FK NOT NULL | Referencia a `rooms(id)` |
+| `idCliente` | INTEGER | FK NOT NULL | Referencia a `clientes(idCliente)` |
+| `checkIn` | DATE | NOT NULL | Fecha de entrada |
+| `checkOut` | DATE | NOT NULL | Fecha de salida |
+| `guests` | INTEGER | NOT NULL | Número de huéspedes |
+| `totalPrice` | REAL | NOT NULL | Precio total en USD |
 | `paymentMethod` | TEXT | NOT NULL | `credit_card` / `debit-card` / `paypal` / `twallet` |
 | `status` | TEXT | DEFAULT `'confirmed'` | `confirmed` / `checked-in` / `checked-out` / `cancelled` |
 | `paymentStatus` | TEXT | DEFAULT `'pending'` | `pending` / `paid` / `refunded` |
-| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
-| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+| `createdAt` | DATETIME | DEFAULT NOW | Hora de creación del registro |
+| `updatedAt` | DATETIME | DEFAULT NOW | Hora de última actualización |
 
 ---
 
 ### invoices
 
-Payment invoices associated with bookings.
+Facturas de pago asociadas a las reservas.
 
-| Column | Type | Constraint | Description |
-|--------|------|------------|-------------|
+| Columna | Tipo | Restricción | Descripción |
+| --- | --- | --- | --- |
 | `id` | TEXT | PK | UUID |
-| `bookingId` | TEXT | FK NOT NULL | References `bookings(id)` |
-| `userId` | INTEGER | FK NOT NULL | References `usuarios(idUsuario)` |
-| `subtotal` | REAL | NOT NULL | Amount before taxes |
-| `taxes` | REAL | NOT NULL | Tax amount |
-| `total` | REAL | NOT NULL | Final total (`subtotal + taxes`) |
-| `additionalCharges` | TEXT | — | JSON object with extra charges |
-| `paymentMethod` | TEXT | NOT NULL | Payment method used |
+| `bookingId` | TEXT | FK NOT NULL | Referencia a `bookings(id)` |
+| `userId` | INTEGER | FK NOT NULL | Referencia a `usuarios(idUsuario)` |
+| `subtotal` | REAL | NOT NULL | Monto antes de impuestos |
+| `taxes` | REAL | NOT NULL | Monto de impuestos |
+| `total` | REAL | NOT NULL | Total final (`subtotal + taxes`) |
+| `additionalCharges` | TEXT | — | Objeto JSON con cargos adicionales |
+| `paymentMethod` | TEXT | NOT NULL | Método de pago utilizado |
 | `paymentStatus` | TEXT | DEFAULT `'pending'` | `pending` / `paid` / `failed` / `refunded` |
-| `issuedDate` | DATETIME | DEFAULT NOW | Invoice issue time |
-| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
-| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+| `issuedDate` | DATETIME | DEFAULT NOW | Hora de emisión de la factura |
+| `createdAt` | DATETIME | DEFAULT NOW | Hora de creación del registro |
+| `updatedAt` | DATETIME | DEFAULT NOW | Hora de última actualización |
 
-The `additionalCharges` field is a JSON object:
+El campo `additionalCharges` es un objeto JSON:
 
 ```json
 {
@@ -157,27 +157,27 @@ The `additionalCharges` field is a JSON object:
 
 ### staff
 
-Hotel staff members.
+Miembros del personal del hotel.
 
-| Column | Type | Constraint | Description |
-|--------|------|------------|-------------|
+| Columna | Tipo | Restricción | Descripción |
+| --- | --- | --- | --- |
 | `id` | TEXT | PK | UUID |
-| `name` | TEXT | NOT NULL | Full name |
+| `name` | TEXT | NOT NULL | Nombre completo |
 | `position` | TEXT | NOT NULL | `receptionist` / `housekeeper` / `manager` |
-| `hotelId` | TEXT | FK NOT NULL | References `hoteles(idHotel)` |
-| `email` | TEXT | NOT NULL | Contact email |
-| `phone` | TEXT | — | Phone number |
+| `hotelId` | TEXT | FK NOT NULL | Referencia a `hoteles(idHotel)` |
+| `email` | TEXT | NOT NULL | Correo de contacto |
+| `phone` | TEXT | — | Número de teléfono |
 | `status` | TEXT | DEFAULT `'active'` | `active` / `inactive` / `on-leave` |
-| `hireDate` | DATE | NOT NULL | Date hired |
-| `idUsuario` | INTEGER | FK | References `usuarios(idUsuario)` (optional) |
-| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
-| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+| `hireDate` | DATE | NOT NULL | Fecha de contratación |
+| `idUsuario` | INTEGER | FK | Referencia a `usuarios(idUsuario)` (opcional) |
+| `createdAt` | DATETIME | DEFAULT NOW | Hora de creación del registro |
+| `updatedAt` | DATETIME | DEFAULT NOW | Hora de última actualización |
 
-A staff member may or may not have a linked `usuarios` account.
+Un miembro del personal puede o no tener una cuenta `usuarios` vinculada.
 
 ---
 
-## Entity Relationships
+## Relaciones entre entidades
 
 ```text
 USUARIOS
@@ -199,11 +199,11 @@ BOOKINGS
   └─ 1:N ─────> INVOICES
 ```
 
-A single booking can have multiple invoices (e.g., for partial payments or refunds).
+Una sola reserva puede tener múltiples facturas (ej. para pagos parciales o reembolsos).
 
-## Indexes
+## Índices
 
-All indexes are created by `initializeDatabase()` to optimize the most common join and lookup patterns:
+Todos los índices son creados por `initializeDatabase()` para optimizar los patrones de join y búsqueda más comunes:
 
 ```sql
 CREATE INDEX idx_rooms_hotelId       ON rooms(hotelId);
@@ -215,10 +215,10 @@ CREATE INDEX idx_invoices_bookingId  ON invoices(bookingId);
 CREATE INDEX idx_usuarios_email      ON usuarios(email);
 ```
 
-## Useful SQL Queries
+## Consultas SQL útiles
 
 <AccordionGroup>
-  <Accordion title="Revenue by hotel">
+  <Accordion title="Ingresos por hotel">
     ```sql
     SELECT h.nombre, SUM(i.total) AS ingresos
     FROM invoices i
@@ -229,13 +229,13 @@ CREATE INDEX idx_usuarios_email      ON usuarios(email);
     ```
   </Accordion>
 
-  <Accordion title="Check room availability">
+  <Accordion title="Verificar disponibilidad de habitación">
     ```sql
     SELECT * FROM rooms WHERE id = 'room-uuid' AND available > 0;
     ```
   </Accordion>
 
-  <Accordion title="All bookings for a client">
+  <Accordion title="Todas las reservas de un cliente">
     ```sql
     SELECT b.*
     FROM bookings b
@@ -244,7 +244,7 @@ CREATE INDEX idx_usuarios_email      ON usuarios(email);
     ```
   </Accordion>
 
-  <Accordion title="Detect overlapping bookings">
+  <Accordion title="Detectar reservas solapadas">
     ```sql
     SELECT * FROM bookings
     WHERE roomId = 'room-uuid'
@@ -254,7 +254,7 @@ CREATE INDEX idx_usuarios_email      ON usuarios(email);
     ```
   </Accordion>
 
-  <Accordion title="Most frequent clients">
+  <Accordion title="Clientes más frecuentes">
     ```sql
     SELECT u.nombre, u.apellido, COUNT(b.id) AS reservas
     FROM bookings b
@@ -267,9 +267,9 @@ CREATE INDEX idx_usuarios_email      ON usuarios(email);
   </Accordion>
 </AccordionGroup>
 
-## SQLite Configuration
+## Configuración de SQLite
 
-The database connection in `src/utils/database.js` applies the following PRAGMAs for reliability and performance:
+La conexión de base de datos en `src/utils/database.js` aplica los siguientes PRAGMAs para fiabilidad y rendimiento:
 
 ```sql
 PRAGMA foreign_keys = ON;
@@ -281,4 +281,4 @@ PRAGMA mmap_size    = 30000000;
 PRAGMA page_size    = 4096;
 ```
 
-A `busyTimeout` of 5000 ms is also set to handle concurrent write contention gracefully.
+También se establece un `busyTimeout` de 5000 ms para manejar la contención de escritura concurrente de forma elegante.

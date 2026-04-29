@@ -1,50 +1,57 @@
 ---
 title: "Hotels API — List, Get, Create, Update, Delete"
-description: "Full reference for all hotel CRUD endpoints. List hotels, fetch by ID, and manage hotel records with admin-only create, update, and delete operations."
+description: "Referencia completa para todos los endpoints CRUD de hoteles. Lista hoteles, obtén por ID y gestiona registros de hoteles con operaciones de creación, actualización y eliminación exclusivas para administradores."
 ---
 
-The Hotels API lets you retrieve hotel listings and, for admin users, manage hotel records. All hotel data is stored with a UUID primary key (`idHotel`). Amenities are stored as a JSON array and returned as a parsed array in every response.
+La Hotels API te permite obtener listados de hoteles y, para usuarios administradores, gestionar registros de hoteles. Todos los datos de hoteles se almacenan con una clave primaria UUID (`idHotel`). Las amenidades se almacenan como un array JSON y se devuelven como un array parseado en cada respuesta.
 
 <Note>
-  Endpoints marked **admin only** require a valid JWT with `rol: "admin"`. Pass the token in the `Authorization` header as `Bearer <token>`.
+  Los endpoints marcados como **solo admin** requieren un JWT válido con `rol: "admin"`. Pasa el token en el header `Authorization` como `Bearer <token>`.
 </Note>
 
 ---
 
 ## GET /api/hotels
 
-Returns every hotel in the system. No authentication required.
+Devuelve todos los hoteles del sistema. No requiere autenticación.
 
-### Response
+### Respuesta
 
 <ResponseField name="[]" type="object[]">
-  Array of hotel objects.
-  <Expandable title="hotel object properties">
+  Array de objetos hotel.
+
+  <Expandable title="propiedades del objeto hotel">
     <ResponseField name="idHotel" type="string" required>
-      UUID that uniquely identifies the hotel.
+      UUID que identifica de forma única al hotel.
     </ResponseField>
+
     <ResponseField name="nombre" type="string" required>
-      Hotel name.
+      Nombre del hotel.
     </ResponseField>
+
     <ResponseField name="description" type="string" required>
-      Detailed description of the hotel.
+      Descripción detallada del hotel.
     </ResponseField>
+
     <ResponseField name="location" type="string" required>
-      Geographic location of the hotel.
+      Ubicación geográfica del hotel.
     </ResponseField>
+
     <ResponseField name="image" type="string" required>
-      URL of the hotel's main image.
+      URL de la imagen principal del hotel.
     </ResponseField>
+
     <ResponseField name="rating" type="number" required>
-      Rating score from 0 to 5.
+      Puntuación de valoración del 0 al 5.
     </ResponseField>
+
     <ResponseField name="amenities" type="string[]" required>
-      List of amenities, e.g. `["WiFi", "Pool", "Gym"]`.
+      Lista de amenidades, ej. `["WiFi", "Pool", "Gym"]`.
     </ResponseField>
   </Expandable>
 </ResponseField>
 
-### Example
+### Ejemplo
 
 ```bash
 curl http://localhost:5000/api/hotels
@@ -68,45 +75,53 @@ curl http://localhost:5000/api/hotels
 
 ## GET /api/hotels/:idHotel
 
-Returns a single hotel by its UUID. No authentication required.
+Devuelve un único hotel por su UUID. No requiere autenticación.
 
-### Path parameters
+### Parámetros de ruta
 
 <ParamField path="idHotel" type="string" required>
-  UUID of the hotel to retrieve.
+  UUID del hotel a obtener.
 </ParamField>
 
-### Response
+### Respuesta
 
 <ResponseField name="idHotel" type="string" required>
-  UUID of the hotel.
-</ResponseField>
-<ResponseField name="nombre" type="string" required>
-  Hotel name.
-</ResponseField>
-<ResponseField name="description" type="string" required>
-  Detailed description.
-</ResponseField>
-<ResponseField name="location" type="string" required>
-  Geographic location.
-</ResponseField>
-<ResponseField name="image" type="string" required>
-  URL of the hotel's main image.
-</ResponseField>
-<ResponseField name="rating" type="number" required>
-  Rating score from 0 to 5.
-</ResponseField>
-<ResponseField name="amenities" type="string[]" required>
-  Parsed array of amenities.
-</ResponseField>
-<ResponseField name="createdAt" type="string" required>
-  ISO 8601 timestamp of when the record was created.
-</ResponseField>
-<ResponseField name="updatedAt" type="string" required>
-  ISO 8601 timestamp of the last update.
+  UUID del hotel.
 </ResponseField>
 
-### Example
+<ResponseField name="nombre" type="string" required>
+  Nombre del hotel.
+</ResponseField>
+
+<ResponseField name="description" type="string" required>
+  Descripción detallada.
+</ResponseField>
+
+<ResponseField name="location" type="string" required>
+  Ubicación geográfica.
+</ResponseField>
+
+<ResponseField name="image" type="string" required>
+  URL de la imagen principal del hotel.
+</ResponseField>
+
+<ResponseField name="rating" type="number" required>
+  Puntuación de valoración del 0 al 5.
+</ResponseField>
+
+<ResponseField name="amenities" type="string[]" required>
+  Array parseado de amenidades.
+</ResponseField>
+
+<ResponseField name="createdAt" type="string" required>
+  Timestamp ISO 8601 de cuándo se creó el registro.
+</ResponseField>
+
+<ResponseField name="updatedAt" type="string" required>
+  Timestamp ISO 8601 de la última actualización.
+</ResponseField>
+
+### Ejemplo
 
 ```bash
 curl http://localhost:5000/api/hotels/a1b2c3d4-e5f6-7890-abcd-ef1234567890
@@ -127,50 +142,56 @@ curl http://localhost:5000/api/hotels/a1b2c3d4-e5f6-7890-abcd-ef1234567890
 ```
 
 <Warning>
-  Returns `404` with `{ "error": "Hotel no encontrado" }` if no hotel exists with the given `idHotel`.
+  Devuelve `404` con `{ "error": "Hotel no encontrado" }` si no existe ningún hotel con el `idHotel` indicado.
 </Warning>
 
 ---
 
 ## POST /api/hotels
 
-Creates a new hotel record. **Admin only.**
+Crea un nuevo registro de hotel. **Solo admin.**
 
 <Note>
-  Requires `Authorization: Bearer <token>` with a JWT issued to a user with `rol: "admin"`.
+  Requiere `Authorization: Bearer <token>` con un JWT emitido a un usuario con `rol: "admin"`.
 </Note>
 
-### Body parameters
+### Parámetros del body
 
 <ParamField body="nombre" type="string" required>
-  Hotel name.
-</ParamField>
-<ParamField body="description" type="string" required>
-  Detailed description of the hotel.
-</ParamField>
-<ParamField body="location" type="string" required>
-  Geographic location of the hotel.
-</ParamField>
-<ParamField body="image" type="string" required>
-  URL of the hotel's main image.
-</ParamField>
-<ParamField body="rating" type="number" required>
-  Rating score from 0 to 5.
-</ParamField>
-<ParamField body="amenities" type="string[]" required>
-  JSON array of amenity strings, e.g. `["WiFi", "Pool", "Gym"]`.
+  Nombre del hotel.
 </ParamField>
 
-### Response
+<ParamField body="description" type="string" required>
+  Descripción detallada del hotel.
+</ParamField>
+
+<ParamField body="location" type="string" required>
+  Ubicación geográfica del hotel.
+</ParamField>
+
+<ParamField body="image" type="string" required>
+  URL de la imagen principal del hotel.
+</ParamField>
+
+<ParamField body="rating" type="number" required>
+  Puntuación de valoración del 0 al 5.
+</ParamField>
+
+<ParamField body="amenities" type="string[]" required>
+  Array JSON de strings de amenidades, ej. `["WiFi", "Pool", "Gym"]`.
+</ParamField>
+
+### Respuesta
 
 <ResponseField name="message" type="string" required>
-  Confirmation message: `"Hotel creado exitosamente"`.
-</ResponseField>
-<ResponseField name="idHotel" type="string" required>
-  UUID assigned to the newly created hotel.
+  Mensaje de confirmación: `"Hotel creado exitosamente"`.
 </ResponseField>
 
-### Example
+<ResponseField name="idHotel" type="string" required>
+  UUID asignado al hotel recién creado.
+</ResponseField>
+
+### Ejemplo
 
 ```bash
 curl -X POST http://localhost:5000/api/hotels \
@@ -197,46 +218,51 @@ curl -X POST http://localhost:5000/api/hotels \
 
 ## PUT /api/hotels/:idHotel
 
-Updates an existing hotel. **Admin only.** You may send any subset of the hotel fields.
+Actualiza un hotel existente. **Solo admin.** Puedes enviar cualquier subconjunto de los campos del hotel.
 
 <Note>
-  Requires `Authorization: Bearer <token>` with a JWT issued to a user with `rol: "admin"`.
+  Requiere `Authorization: Bearer <token>` con un JWT emitido a un usuario con `rol: "admin"`.
 </Note>
 
-### Path parameters
+### Parámetros de ruta
 
 <ParamField path="idHotel" type="string" required>
-  UUID of the hotel to update.
+  UUID del hotel a actualizar.
 </ParamField>
 
-### Body parameters
+### Parámetros del body
 
 <ParamField body="nombre" type="string">
-  Updated hotel name.
-</ParamField>
-<ParamField body="description" type="string">
-  Updated description.
-</ParamField>
-<ParamField body="location" type="string">
-  Updated geographic location.
-</ParamField>
-<ParamField body="image" type="string">
-  Updated image URL.
-</ParamField>
-<ParamField body="rating" type="number">
-  Updated rating score (0–5).
-</ParamField>
-<ParamField body="amenities" type="string[]">
-  Updated amenities array.
+  Nombre actualizado del hotel.
 </ParamField>
 
-### Response
+<ParamField body="description" type="string">
+  Descripción actualizada.
+</ParamField>
+
+<ParamField body="location" type="string">
+  Ubicación geográfica actualizada.
+</ParamField>
+
+<ParamField body="image" type="string">
+  URL de imagen actualizada.
+</ParamField>
+
+<ParamField body="rating" type="number">
+  Puntuación de valoración actualizada (0–5).
+</ParamField>
+
+<ParamField body="amenities" type="string[]">
+  Array de amenidades actualizado.
+</ParamField>
+
+### Respuesta
 
 <ResponseField name="message" type="string" required>
-  Confirmation message: `"Hotel actualizado exitosamente"`.
+  Mensaje de confirmación: `"Hotel actualizado exitosamente"`.
 </ResponseField>
 
-### Example
+### Ejemplo
 
 ```bash
 curl -X PUT http://localhost:5000/api/hotels/a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
@@ -255,32 +281,32 @@ curl -X PUT http://localhost:5000/api/hotels/a1b2c3d4-e5f6-7890-abcd-ef123456789
 ```
 
 <Warning>
-  Returns `404` with `{ "error": "Hotel no encontrado" }` if no hotel exists with the given `idHotel`.
+  Devuelve `404` con `{ "error": "Hotel no encontrado" }` si no existe ningún hotel con el `idHotel` indicado.
 </Warning>
 
 ---
 
 ## DELETE /api/hotels/:idHotel
 
-Permanently removes a hotel from the system. **Admin only.**
+Elimina permanentemente un hotel del sistema. **Solo admin.**
 
 <Warning>
-  This action is irreversible. Deleting a hotel will also affect any associated rooms. Requires `Authorization: Bearer <token>` with `rol: "admin"`.
+  Esta acción es irreversible. Eliminar un hotel también afectará a cualquier habitación asociada. Requiere `Authorization: Bearer <token>` con `rol: "admin"`.
 </Warning>
 
-### Path parameters
+### Parámetros de ruta
 
 <ParamField path="idHotel" type="string" required>
-  UUID of the hotel to delete.
+  UUID del hotel a eliminar.
 </ParamField>
 
-### Response
+### Respuesta
 
 <ResponseField name="message" type="string" required>
-  Confirmation message: `"Hotel eliminado exitosamente"`.
+  Mensaje de confirmación: `"Hotel eliminado exitosamente"`.
 </ResponseField>
 
-### Example
+### Ejemplo
 
 ```bash
 curl -X DELETE http://localhost:5000/api/hotels/a1b2c3d4-e5f6-7890-abcd-ef1234567890 \

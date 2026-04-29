@@ -1,106 +1,108 @@
 ---
-title: "Browse and Search Hotels in ViniHotel"
-description: "Discover available hotels, filter by amenities or price, and explore room details, types, and pricing before making a reservation."
+title: "Explorar y Buscar Hoteles en ViniHotel"
+description: "Descubre los hoteles disponibles, filtra por servicios o precio, y explora detalles de habitaciones, tipos y tarifas antes de hacer una reserva."
 ---
 
-ViniHotel's home page presents the full hotel catalog so you can find and compare properties before committing to a booking. Each card shows the hotel's image, name, location, star rating, amenities, and the starting room price. Clicking any card opens the hotel detail page where you can review individual rooms and begin the reservation process.
+La página principal de ViniHotel presenta el catálogo completo de hoteles para que puedas encontrar y comparar propiedades antes de confirmar una reserva. Cada tarjeta muestra la imagen del hotel, nombre, ubicación, clasificación en estrellas, servicios y el precio inicial de la habitación. Al hacer clic en cualquier tarjeta se abre la página de detalle del hotel, donde puedes revisar las habitaciones individuales e iniciar el proceso de reserva.
 
 <Note>
-  You must be logged in to access the hotel detail page. Unauthenticated users are redirected to `/login` before they can view room information or start a booking.
+  Debes haber iniciado sesión para acceder a la página de detalle del hotel. Los usuarios no autenticados son redirigidos a `/login` antes de poder ver información de habitaciones o iniciar una reserva.
 </Note>
 
-## The hotel listing page
+## La página de listado de hoteles
 
-The home page (`/`) loads all hotels from the data store and displays them in a responsive grid. Each hotel card surfaces the following fields from the `Hotel` type:
+La página principal (`/`) carga todos los hoteles del almacén de datos y los muestra en una cuadrícula responsiva. Cada tarjeta de hotel muestra los siguientes campos del tipo `Hotel`:
 
-| Field | Description |
-|---|---|
-| `name` | The hotel's display name |
-| `location` | City and country (e.g., "Madrid, España") |
-| `rating` | Numeric star rating out of 5.0 |
-| `amenities` | Up to three amenity badges shown inline |
-| `image` | Cover photo rendered at a fixed aspect ratio |
+| Campo | Descripción |
+| --- | --- |
+| `name` | El nombre visible del hotel |
+| `location` | Ciudad y país (ej. "Madrid, España") |
+| `rating` | Clasificación numérica en estrellas sobre 5.0 |
+| `amenities` | Hasta tres insignias de servicios mostradas en línea |
+| `image` | Foto de portada renderizada con una relación de aspecto fija |
 
-Below the image the card shows "Desde $X" — the lowest `price` across all rooms for that hotel.
+Debajo de la imagen, la tarjeta muestra "Desde \$X" — el `price` más bajo entre todas las habitaciones de ese hotel.
 
-## Searching and filtering
+## Búsqueda y filtrado
 
-The toolbar at the top of the listing provides three controls:
+La barra de herramientas en la parte superior del listado ofrece tres controles:
 
 <AccordionGroup>
-  <Accordion title="Text search">
-    The search box matches against a hotel's `name`, `location`, and `description` fields simultaneously. The list updates as you type.
+  <Accordion title="Búsqueda por texto">
+    El cuadro de búsqueda coincide simultáneamente con los campos `name`, `location` y `description` de un hotel. La lista se actualiza mientras escribes.
   </Accordion>
-  <Accordion title="Sort order">
-    Choose from three options:
 
-    - **Mejor valorados** — sorted by `rating` descending (default)
-    - **Precio ascendente** — sorted by the lowest room `price` ascending
-    - **Precio descendente** — sorted by the lowest room `price` descending
+  <Accordion title="Orden de clasificación">
+    Elige entre tres opciones:
+
+    - **Mejor valorados** — ordenado por `rating` descendente (predeterminado)
+    - **Precio ascendente** — ordenado por el `price` más bajo de habitación de forma ascendente
+    - **Precio descendente** — ordenado por el `price` más bajo de habitación de forma descendente
   </Accordion>
-  <Accordion title="Filters panel">
-    Open the slide-over panel with the **Filtros** button to apply additional constraints:
 
-    - **Rango de precio** — filters by the minimum room price: under $150 (`low`), $150–$300 (`medium`), or above $300 (`high`)
-    - **Tipo de habitación** — filters to hotels that have at least one room of a given `type` (e.g., Individual, Doble, Suite)
-    - **Servicios** — select one or more amenities; only hotels that include every selected amenity are shown
+  <Accordion title="Panel de filtros">
+    Abre el panel deslizante con el botón **Filtros** para aplicar restricciones adicionales:
 
-    Active filters are counted on the **Filtros** badge. Use **Limpiar filtros** to reset all filters at once.
+    - **Rango de precio** — filtra por el precio mínimo de habitación: menos de $150 (`low`), $150–$300 (`medium`), o más de $300 (`high`)
+    - **Tipo de habitación** — filtra para mostrar solo hoteles que tengan al menos una habitación del `type` indicado (ej. Individual, Doble, Suite)
+    - **Servicios** — selecciona uno o más servicios; solo se muestran los hoteles que incluyen todos los servicios seleccionados
+
+    Los filtros activos se cuentan en la insignia **Filtros**. Usa **Limpiar filtros** para restablecer todos los filtros a la vez.
   </Accordion>
 </AccordionGroup>
 
-## Navigating to hotel detail
+## Navegación al detalle del hotel
 
 <Steps>
-  <Step title="Find a hotel">
-    Browse or search the listing at `/`. The result count is shown above the grid (e.g., "12 hoteles encontrados").
+  <Step title="Encuentra un hotel">
+    Navega o busca en el listado en `/`. El recuento de resultados se muestra sobre la cuadrícula (ej. "12 hoteles encontrados").
   </Step>
-  <Step title="Open the detail page">
-    Click the hotel's cover image or the **Ver detalles** button. The app navigates to `/hotel/:id`.
+  <Step title="Abre la página de detalle">
+    Haz clic en la imagen de portada del hotel o en el botón **Ver detalles**. La aplicación navega a `/hotel/:id`.
   </Step>
-  <Step title="Review hotel information">
-    The detail page shows the full `description`, `location`, and `rating` alongside all `amenities` as badges.
+  <Step title="Revisa la información del hotel">
+    La página de detalle muestra la `description` completa, `location` y `rating` junto con todos los `amenities` como insignias.
   </Step>
-  <Step title="Browse available rooms">
-    The **Habitaciones Disponibles** section lists every room for that hotel. Each room card shows:
+  <Step title="Explora las habitaciones disponibles">
+    La sección **Habitaciones Disponibles** lista todas las habitaciones de ese hotel. Cada tarjeta de habitación muestra:
 
-    - `name` — room display name
-    - `type` — room category (Individual, Doble, or Suite)
-    - `capacity` — maximum number of guests
-    - `price` — nightly rate in USD
-    - `available` — number of units currently available
-    - `amenities` — per-room feature badges
+    - `name` — nombre visible de la habitación
+    - `type` — categoría de la habitación (Individual, Doble o Suite)
+    - `capacity` — número máximo de huéspedes
+    - `price` — tarifa por noche en USD
+    - `available` — número de unidades actualmente disponibles
+    - `amenities` — insignias de características por habitación
   </Step>
 </Steps>
 
-## Room availability and status
+## Disponibilidad y estado de habitaciones
 
-A room's `status` field controls whether it can be booked:
+El campo `status` de una habitación controla si puede ser reservada:
 
-| Status | Meaning | Bookable |
-|---|---|---|
-| `available` | Ready for guests | Yes |
-| `occupied` | Currently checked in | No |
-| `cleaning` | Being serviced | No |
-| `maintenance` | Under repair | No |
+| Estado | Significado | Reservable |
+| --- | --- | --- |
+| `available` | Lista para huéspedes | Sí |
+| `occupied` | Actualmente ocupada | No |
+| `cleaning` | En proceso de limpieza | No |
+| `maintenance` | En reparación | No |
 
-Rooms with `available === 0` or a non-bookable status display a disabled button ("No Disponible", "En Limpieza", or "En Mantenimiento") instead of **Reservar Ahora**.
+Las habitaciones con `available === 0` o un estado no reservable muestran un botón deshabilitado ("No Disponible", "En Limpieza" o "En Mantenimiento") en lugar de **Reservar Ahora**.
 
-## Payment methods
+## Métodos de pago
 
-ViniHotel supports the following payment methods at checkout. The `paymentMethod` value sent to the API must match exactly:
+ViniHotel admite los siguientes métodos de pago al momento del pago. El valor de `paymentMethod` enviado a la API debe coincidir exactamente:
 
-| API value | Description | Payment status after booking |
-|---|---|---|
-| `credit_card` | Credit card | `pending` |
-| `debit-card` | Debit card | `paid` (auto-set immediately) |
+| Valor en la API | Descripción | Estado de pago tras la reserva |
+| --- | --- | --- |
+| `credit_card` | Tarjeta de crédito | `pending` |
+| `debit-card` | Tarjeta de débito | `paid` (se establece automáticamente de inmediato) |
 | `paypal` | PayPal | `pending` |
-| `twallet` | T-Wallet digital payment | `pending` |
+| `twallet` | Pago digital T-Wallet | `pending` |
 
 <Note>
-  Only `debit-card` bookings have their `paymentStatus` set to `paid` automatically at creation. All other payment methods start with `paymentStatus: "pending"`.
+  Solo las reservas con `debit-card` tienen su `paymentStatus` establecido en `paid` automáticamente al momento de la creación. Todos los demás métodos de pago comienzan con `paymentStatus: "pending"`.
 </Note>
 
 <Tip>
-  To proceed with a booking after browsing, see [Making a hotel room reservation](/guides/making-a-booking).
+  Para continuar con una reserva después de explorar, consulta [Hacer una reserva de habitación de hotel](/guides/making-a-booking).
 </Tip>

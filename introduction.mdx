@@ -1,0 +1,68 @@
+---
+title: "ViniHotel: Hotel Booking Platform Overview"
+description: "ViniHotel is a full-stack hotel booking platform built with React, Vite, Node.js, Express, and SQLite for clients, staff, and admins."
+---
+
+ViniHotel is a full-stack hotel booking platform that lets guests browse hotels, reserve rooms, and manage their bookings — while giving hotel staff and administrators dedicated dashboards to handle operations, housekeeping, and reporting. The frontend is a React 18 single-page application built with Vite, and the backend is a Node.js + Express REST API backed by a SQLite database that is created automatically on first run.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Hotel Browsing & Booking" icon="building">
+    Guests can browse available hotels, view room details, check availability by date range, and complete a booking through a guided payment flow.
+  </Card>
+  <Card title="My Bookings Dashboard" icon="calendar">
+    Authenticated users can view all their past and upcoming reservations, cancel bookings, and download invoices from a personal dashboard.
+  </Card>
+  <Card title="Staff Operations" icon="clipboard-list">
+    Staff members access a booking management view and a housekeeping board to track room status and assign cleaning tasks across properties.
+  </Card>
+  <Card title="Admin Control Panel" icon="shield-check">
+    Administrators manage hotels, rooms, staff accounts, and can view platform-wide reports and all invoices through protected admin routes.
+  </Card>
+  <Card title="JWT Authentication" icon="lock">
+    Every protected route is secured with JSON Web Tokens. Tokens are issued on login or registration, stored in `localStorage`, and expire after 7 days.
+  </Card>
+  <Card title="Invoice Generation" icon="receipt">
+    After a booking is completed, invoices can be created, retrieved, and updated through the `/api/invoices` endpoints for both guests and admins.
+  </Card>
+</CardGroup>
+
+## Tech Stack
+
+ViniHotel is split into two independently runnable services that communicate over HTTP.
+
+**Frontend** (`/` — root of the repository)
+- React 18 with React Router 7 for client-side routing
+- Vite 6 as the build tool and dev server (runs on port 5173)
+- Tailwind CSS 4 for styling
+- Radix UI + MUI component libraries
+- `src/utils/apiClient.ts` — a typed `ApiClient` class that attaches the `Authorization: Bearer` header to every authenticated request
+
+**Backend** (`/backend`)
+- Node.js with Express 4
+- SQLite via the `sqlite` and `sqlite3` packages — database file at `backend/data/vinihotel.db`
+- `bcryptjs` for password hashing, `jsonwebtoken` for JWT issuance and verification
+- `nodemon` for hot-reloading during development (runs on port 5000)
+
+**Database**
+
+The SQLite database is initialized automatically when the backend starts. It creates seven tables: `usuarios`, `clientes`, `hoteles`, `rooms`, `bookings`, `invoices`, and `staff`. Sample data (hotels, rooms, and test users) is seeded on first startup.
+
+## User Roles
+
+ViniHotel has three distinct roles, each with access to a different set of frontend routes and API endpoints.
+
+| Role | Access |
+|------|--------|
+| `client` | Home, hotel detail, payment, booking confirmation, my bookings, profile |
+| `staff` | All client pages plus booking management and housekeeping |
+| `admin` | All pages including staff management, hotel management, and reports |
+
+<Info>
+  Role enforcement happens in two places: the `ProtectedRoute` component in the frontend (see `src/app/routes.tsx`) and JWT middleware on the backend. A user without the required role is redirected by the frontend before any API call is made.
+</Info>
+
+## Next Steps
+
+Ready to run ViniHotel locally? Follow the [Quickstart](/quickstart) guide to have both servers running in under five minutes.

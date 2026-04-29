@@ -1,133 +1,65 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
-icon: 'star'
+title: "ViniHotel: Hotel Booking Platform"
+description: "ViniHotel is a full-stack hotel booking platform. Browse hotels, check room availability, make reservations, and manage your stays all in one place."
 ---
 
-## Setting up
+ViniHotel is a complete hotel booking platform that lets guests browse properties, check real-time room availability, and complete reservations in minutes. Staff and administrators get dedicated dashboards for managing bookings, housekeeping, and hotel operations.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Set up ViniHotel locally and make your first booking in under 10 minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Architecture" icon="diagram-project" href="/architecture">
+    Understand how the React frontend, Express backend, and SQLite database fit together.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="User Guides" icon="book-open" href="/guides/browsing-hotels">
+    Learn how to browse hotels, book rooms, and manage your reservations.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="API Reference" icon="code" href="/api/overview">
+    Explore the full REST API for hotels, rooms, bookings, and invoices.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What you can do with ViniHotel
 
-Everything you need to create world-class documentation.
+<CardGroup cols={2}>
+  <Card title="Browse & Book Hotels" icon="hotel" href="/guides/browsing-hotels">
+    Search available hotels, view room details, and check availability by date range.
+  </Card>
+  <Card title="Manage Bookings" icon="calendar-check" href="/guides/managing-bookings">
+    View your reservation history, check booking status, and cancel if needed.
+  </Card>
+  <Card title="Hotel Administration" icon="building" href="/guides/hotel-management">
+    Admins can create, update, and manage hotel listings and room inventory.
+  </Card>
+  <Card title="Staff Operations" icon="users" href="/guides/staff-management">
+    Manage housekeeping schedules, booking workflows, and generate reports.
+  </Card>
+</CardGroup>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+## Get started
 
-## Make your content agent ready
+<Steps>
+  <Step title="Start the backend">
+    Install dependencies and start the Express API server on port 5000.
+    ```bash
+    cd backend && npm install && npm run dev
+    ```
+  </Step>
+  <Step title="Start the frontend">
+    In a separate terminal, start the React app on port 5173.
+    ```bash
+    npm install && npm run dev
+    ```
+  </Step>
+  <Step title="Open the app">
+    Navigate to [http://localhost:5173](http://localhost:5173) and register an account or sign in with the test credentials.
+  </Step>
+  <Step title="Make your first booking">
+    Browse hotels on the home page, select a room, choose your dates, and confirm your reservation.
+  </Step>
+</Steps>
 
-Make your docs work for humans and AI agents alike.
-
-<Columns cols={2}>
-  <Card
-    title="Prompt component"
-    icon="robot"
-    href="/agent-ready/prompt"
-  >
-    Embed shareable AI prompts readers can copy or open in Cursor.
-  </Card>
-  <Card
-    title="Visibility"
-    icon="eye"
-    href="/agent-ready/visibility"
-  >
-    Show different content to humans and agents reading your docs.
-  </Card>
-  <Card
-    title="Contextual menu"
-    icon="bolt"
-    href="/agent-ready/contextual"
-  >
-    Give readers one-click access to Claude, ChatGPT, Cursor, and more.
-  </Card>
-  <Card
-    title="AI coding tools"
-    icon="wand-magic-sparkles"
-    href="/ai-tools/claude-code"
-  >
-    Set up Claude Code, Cursor, or Windsurf with Mintlify's skill.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Note>
+  The backend must be running before you start the frontend. The React app connects automatically to `http://localhost:5000`.
+</Note>

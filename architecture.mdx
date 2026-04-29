@@ -1,0 +1,152 @@
+---
+title: "ViniHotel Architecture and Project Structure"
+description: "How ViniHotel's React frontend, Express API, and SQLite database connect — with a full reference for all routes, pages, and directory structure."
+---
+
+ViniHotel is a decoupled full-stack application. The React frontend runs as a Vite dev server on port 5173 and communicates with the Express backend on port 5000 over HTTP. The backend persists all data in a SQLite database file that is created automatically at `backend/data/vinihotel.db` on first startup. There is no shared process — the two services are started independently and connected only by HTTP and a shared JWT secret.
+
+## Architecture diagram
+
+```
+┌─────────────────────────┐
+│   React Frontend :5173  │  (Vite + React Router 7)
+│   src/utils/apiClient   │
+└────────────┬────────────┘
+             │  HTTP  (Authorization: Bearer <token>)
+             ▼
+┌─────────────────────────┐
+│   Express API :5000     │  (Node.js + Express 4)
+│   /api/*                │
+└────────────┬────────────┘
+             │  SQL  (sqlite / sqlite3)
+             ▼
+┌─────────────────────────┐
+│   SQLite Database       │  backend/data/vinihotel.db
+│   7 tables              │
+└─────────────────────────┘
+```
+
+## Frontend structure
+
+The frontend source lives under `src/` in the project root.
+
+```
+src/
+├── main.tsx                  # Entry point — mounts <App /> into #root
+├── app/
+│   ├── App.tsx               # Root component, provides RouterProvider
+│   ├── routes.tsx            # All route definitions (createBrowserRouter)
+│   ├── pages/                # One file per page component
+│   │   ├── home.tsx
+│   │   ├── hotel-detail.tsx
+│   │   ├── payment.tsx
+│   │   ├── booking-confirmation.tsx
+│   │   ├── my-bookings.tsx
+│   │   ├── user-profile.tsx
+│   │   ├── staff-management.tsx
+│   │   ├── hotel-management.tsx
+│   │   ├── login.tsx
+│   │   ├── register.tsx
+│   │   ├── not-found.tsx
+│   │   └── staff/
+│   │       ├── booking-management.tsx
+│   │       ├── housekeeping.tsx
+│   │       └── reports.tsx
+│   ├── components/
+│   │   └── protected-route.tsx  # Role-based route guard
+│   └── context/              # React context providers (auth state, etc.)
+└── utils/
+    └── apiClient.ts          # Typed HTTP client (ApiClient class)
+```
+
+`src/utils/apiClient.ts` exports a singleton `apiClient` instance. It reads the JWT from `localStorage` on construction and attaches `Authorization: Bearer <token>` to every request that requires authentication.
+
+## Backend structure
+
+The backend source lives under `backend/src/`.
+
+```
+backend/
+├── src/
+│   ├── server.js             # Express app, middleware, route mounting, startup
+│   ├── routes/               # Express routers (one file per resource)
+│   │   ├── auth.js
+│   │   ├── hotels.js
+│   │   ├── rooms.js
+│   │   ├── bookings.js
+│   │   └── invoices.js
+│   ├── models/               # SQLite query functions (one file per table)
+│   │   ├── userModel.js
+│   │   ├── hotelModel.js
+│   │   └── roomModel.js
+│   ├── middleware/
+│   │   └── auth.js           # JWT verification middleware + error handler
+│   └── utils/
+│       ├── database.js       # initializeDatabase() — creates tables on startup
+│       └── sampleData.js     # Seed data for users, hotels, and rooms
+├── data/
+│   └── vinihotel.db          # SQLite database file (auto-created)
+├── package.json
+└── .env                      # Environment variables (not committed)
+```
+
+## Frontend routes
+
+All routes are defined in `src/app/routes.tsx` using React Router 7's `createBrowserRouter`. Routes inside the `/` parent are rendered inside the `Root` layout component. Protected routes use the `ProtectedRoute` wrapper, which enforces the required role before rendering the page.
+
+| Path | Component | Required role |
+|------|-----------|---------------|
+| `/login` | `Login` | None (public) |
+| `/register` | `Register` | None (public) |
+| `/` | `Home` | None (public) |
+| `/hotel/:id` | `HotelDetail` | Any authenticated user |
+| `/payment` | `Payment` | Any authenticated user |
+| `/booking-confirmation` | `BookingConfirmation` | Any authenticated user |
+| `/my-bookings` | `MyBookings` | Any authenticated user |
+| `/profile` | `UserProfile` | Any authenticated user |
+| `/bookings` | `BookingManagement` | `staff` or `admin` |
+| `/housekeeping` | `Housekeeping` | `staff` or `admin` |
+| `/staff` | `StaffManagement` | `admin` only |
+| `/hotels` | `HotelManagement` | `admin` only |
+| `/reports` | `Reports` | `admin` only |
+
+<Note>
+  Role checking happens client-side in `ProtectedRoute` and again server-side in the Express JWT middleware. A client-side bypass still results in a 401 or 403 from the API.
+</Note>
+
+## API base URLs
+
+| Service | Base URL | Notes |
+|---------|----------|-------|
+| Backend root | `http://localhost:5000` | Configurable via `PORT` in `.env` |
+| API prefix | `http://localhost:5000/api` | All endpoints are under `/api` |
+| Health check | `http://localhost:5000/api/health` | Returns `{ "status": "Backend running" }` |
+| Frontend | `http://localhost:5173` | Configurable in Vite; must match `CORS_ORIGIN` |
+
+The `ApiClient` class in `src/utils/apiClient.ts` hard-codes `http://localhost:5000/api` as its base URL. To point to a different backend, update the `API_URL` constant in that file.
+
+## Authentication flow
+
+ViniHotel uses stateless JWT authentication with a 7-day token lifetime.
+
+<Steps>
+  <Step title="Login or register">
+    The frontend calls `POST /api/auth/login` (or `/api/auth/register`) with the user's email and password (`contrasena` field).
+  </Step>
+  <Step title="Token issued">
+    The backend verifies the password with bcrypt, signs a JWT using `JWT_SECRET`, and returns the token in the response body.
+  </Step>
+  <Step title="Token stored">
+    `ApiClient.setToken()` saves the token to `localStorage` under the key `token`. On subsequent page loads, the constructor reads it back with `localStorage.getItem('token')`.
+  </Step>
+  <Step title="Authenticated requests">
+    Every API call made through `apiClient` automatically includes the header:
+
+    ```
+    Authorization: Bearer <token>
+    ```
+  </Step>
+  <Step title="Token expiry">
+    Tokens expire after 7 days (`JWT_EXPIRE=7d`). To sign out, call `ApiClient.clearToken()`, which removes the token from `localStorage`.
+  </Step>
+</Steps>

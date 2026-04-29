@@ -1,0 +1,106 @@
+---
+title: "Browse and Search Hotels in ViniHotel"
+description: "Discover available hotels, filter by amenities or price, and explore room details, types, and pricing before making a reservation."
+---
+
+ViniHotel's home page presents the full hotel catalog so you can find and compare properties before committing to a booking. Each card shows the hotel's image, name, location, star rating, amenities, and the starting room price. Clicking any card opens the hotel detail page where you can review individual rooms and begin the reservation process.
+
+<Note>
+  You must be logged in to access the hotel detail page. Unauthenticated users are redirected to `/login` before they can view room information or start a booking.
+</Note>
+
+## The hotel listing page
+
+The home page (`/`) loads all hotels from the data store and displays them in a responsive grid. Each hotel card surfaces the following fields from the `Hotel` type:
+
+| Field | Description |
+|---|---|
+| `name` | The hotel's display name |
+| `location` | City and country (e.g., "Madrid, España") |
+| `rating` | Numeric star rating out of 5.0 |
+| `amenities` | Up to three amenity badges shown inline |
+| `image` | Cover photo rendered at a fixed aspect ratio |
+
+Below the image the card shows "Desde $X" — the lowest `price` across all rooms for that hotel.
+
+## Searching and filtering
+
+The toolbar at the top of the listing provides three controls:
+
+<AccordionGroup>
+  <Accordion title="Text search">
+    The search box matches against a hotel's `name`, `location`, and `description` fields simultaneously. The list updates as you type.
+  </Accordion>
+  <Accordion title="Sort order">
+    Choose from three options:
+
+    - **Mejor valorados** — sorted by `rating` descending (default)
+    - **Precio ascendente** — sorted by the lowest room `price` ascending
+    - **Precio descendente** — sorted by the lowest room `price` descending
+  </Accordion>
+  <Accordion title="Filters panel">
+    Open the slide-over panel with the **Filtros** button to apply additional constraints:
+
+    - **Rango de precio** — filters by the minimum room price: under $150 (`low`), $150–$300 (`medium`), or above $300 (`high`)
+    - **Tipo de habitación** — filters to hotels that have at least one room of a given `type` (e.g., Individual, Doble, Suite)
+    - **Servicios** — select one or more amenities; only hotels that include every selected amenity are shown
+
+    Active filters are counted on the **Filtros** badge. Use **Limpiar filtros** to reset all filters at once.
+  </Accordion>
+</AccordionGroup>
+
+## Navigating to hotel detail
+
+<Steps>
+  <Step title="Find a hotel">
+    Browse or search the listing at `/`. The result count is shown above the grid (e.g., "12 hoteles encontrados").
+  </Step>
+  <Step title="Open the detail page">
+    Click the hotel's cover image or the **Ver detalles** button. The app navigates to `/hotel/:id`.
+  </Step>
+  <Step title="Review hotel information">
+    The detail page shows the full `description`, `location`, and `rating` alongside all `amenities` as badges.
+  </Step>
+  <Step title="Browse available rooms">
+    The **Habitaciones Disponibles** section lists every room for that hotel. Each room card shows:
+
+    - `name` — room display name
+    - `type` — room category (Individual, Doble, or Suite)
+    - `capacity` — maximum number of guests
+    - `price` — nightly rate in USD
+    - `available` — number of units currently available
+    - `amenities` — per-room feature badges
+  </Step>
+</Steps>
+
+## Room availability and status
+
+A room's `status` field controls whether it can be booked:
+
+| Status | Meaning | Bookable |
+|---|---|---|
+| `available` | Ready for guests | Yes |
+| `occupied` | Currently checked in | No |
+| `cleaning` | Being serviced | No |
+| `maintenance` | Under repair | No |
+
+Rooms with `available === 0` or a non-bookable status display a disabled button ("No Disponible", "En Limpieza", or "En Mantenimiento") instead of **Reservar Ahora**.
+
+## Payment methods
+
+ViniHotel supports the following payment methods at checkout. The `paymentMethod` value sent to the API must match exactly:
+
+| API value | Description | Payment status after booking |
+|---|---|---|
+| `credit_card` | Credit card | `pending` |
+| `debit-card` | Debit card | `paid` (auto-set immediately) |
+| `paypal` | PayPal | `pending` |
+| `twallet` | T-Wallet digital payment | `pending` |
+
+<Note>
+  Only `debit-card` bookings have their `paymentStatus` set to `paid` automatically at creation. All other payment methods start with `paymentStatus: "pending"`.
+</Note>
+
+<Tip>
+  To proceed with a booking after browsing, see [Making a hotel room reservation](/guides/making-a-booking).
+</Tip>

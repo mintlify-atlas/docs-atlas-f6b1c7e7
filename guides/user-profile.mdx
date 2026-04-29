@@ -1,0 +1,111 @@
+---
+title: "Manage Your ViniHotel Account Profile"
+description: "View and update your personal information, understand user roles, review booking history, and manage invoices from your ViniHotel profile page."
+---
+
+Your profile page at `/profile` is the central place to keep your personal details up to date, review past reservations, and access invoices. Profile data is stored in the backend database and retrieved via the `GET /api/auth/me` endpoint using your JWT token.
+
+<Info>
+  The profile page requires authentication. Unauthenticated users are redirected to `/login`.
+</Info>
+
+## Accessing your profile
+
+Navigate to `/profile` from the main navigation. The page is organized into three tabs:
+
+- **Datos Personales** — personal information form
+- **Historial de Reservas** — all bookings linked to your account
+- **Facturas** — all invoices linked to your account
+
+## Profile fields
+
+The **Datos Personales** tab displays the following fields from the `User` type:
+
+| Field | Description | Editable |
+|---|---|---|
+| `nombre` | First name | Yes |
+| `apellido` | Last name | Yes |
+| `email` | Account email address | No (read-only) |
+| `phone` | Phone number | Yes |
+| `dateOfBirth` | Date of birth | Yes |
+| `nationality` | Nationality | Yes |
+| `documentId` | Government-issued document number | Yes |
+| `address` | Full address | Yes |
+
+The `email` field is read-only after registration. The `rol` (role) cannot be changed by the user. All other fields can be updated via `PUT /api/auth/profile`.
+
+## How to update your profile
+
+<Steps>
+  <Step title="Open the profile page">
+    Navigate to `/profile`. The **Datos Personales** tab is active by default.
+  </Step>
+  <Step title="Enter edit mode">
+    Click **Editar Perfil**. All editable fields become active inputs.
+  </Step>
+  <Step title="Make your changes">
+    Update any combination of `nombre`, `apellido`, `phone`, `dateOfBirth`, `nationality`, `documentId`, or `address`.
+  </Step>
+  <Step title="Save">
+    Click **Guardar Cambios**. The changes are sent to `PUT /api/auth/profile` and persisted in the backend database.
+  </Step>
+</Steps>
+
+## User roles
+
+Every account has a `role` field. The role is assigned at creation time and controls access to administrative features:
+
+<CardGroup cols={3}>
+  <Card title="client" icon="user">
+    Default role for all self-registered accounts. Full access to browsing, booking, and profile management.
+  </Card>
+  <Card title="staff" icon="users">
+    Hotel staff members. Access to booking management and housekeeping in addition to client routes.
+  </Card>
+  <Card title="admin" icon="shield">
+    Administrators. Full access to all pages including hotel management, staff management, and reports.
+  </Card>
+</CardGroup>
+
+The role (`rol`) is stored in the `usuarios` table and encoded in the JWT token. It is enforced both by the frontend `ProtectedRoute` component and by the backend JWT middleware.
+
+## Booking history tab
+
+The **Historial de Reservas** tab lists every booking associated with your email address. Each entry shows:
+
+- `hotelName` and `roomName`
+- `checkIn` and `checkOut` dates
+- `guests` count
+- `totalPrice`
+- `status` badge (`confirmed`, `checked-in`, `checked-out`, or `cancelled`)
+- `paymentStatus` label (`paid`, `pending`, or `refunded`)
+
+## Invoices tab
+
+The **Facturas** tab lists all invoices generated for your bookings. Each invoice card shows:
+
+- Invoice ID (last 8 characters of `id`, uppercased)
+- `hotelName` and `roomName`
+- `issuedDate`
+- `total` amount
+- `paymentStatus` badge
+
+Click **Ver Factura** to open a detail dialog with the full cost breakdown: `subtotal`, `taxes` (16%), `additionalCharges`, and `total`. Use **Descargar PDF** to print the invoice.
+
+## Account security
+
+<AccordionGroup>
+  <Accordion title="Password storage">
+    Passwords are hashed with bcrypt on the backend before storage. The plaintext password is never persisted. Avoid reusing passwords from other services.
+  </Accordion>
+  <Accordion title="Session token">
+    After login, the JWT token is stored in `localStorage` under the key `token`. The frontend `apiClient` reads this value on load and attaches it to every authenticated request. Clearing browser storage will log you out.
+  </Accordion>
+  <Accordion title="Logging out">
+    Logging out calls `apiClient.clearToken()` from `AuthContext`, which removes the token from `localStorage` and clears the in-memory user state. You are immediately redirected away from any protected routes.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  Registered accounts default to the `client` role. Role upgrades to `staff` or `admin` require a direct database change — there is no self-service role change in the current UI.
+</Note>

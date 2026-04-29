@@ -1,0 +1,107 @@
+---
+title: "View and Manage Your Reservations"
+description: "Access your complete booking history in ViniHotel, understand confirmed and checked-in reservation statuses, cancel upcoming stays, and view linked invoices."
+---
+
+The My Bookings page gives you a consolidated view of every reservation tied to your account — upcoming stays, the current active stay, and your booking history. You can also cancel upcoming reservations directly from this page.
+
+<Info>
+  The page at `/my-bookings` requires authentication. If you are not logged in, you will be redirected to `/login`.
+</Info>
+
+## Accessing My Bookings
+
+Navigate to `/my-bookings` from the main navigation. The page opens with three summary cards at the top:
+
+- **Total de Reservas** — total number of bookings across all time
+- **Próximas** — count of bookings where `checkIn` is in the future
+- **Completadas** — count of bookings where `checkOut` is in the past
+
+## Booking sections
+
+Bookings are split into three sections based on their dates relative to today:
+
+### Current stay
+
+If today falls between `checkIn` and `checkOut`, the booking appears in the **Estancia Actual** section with a green "En curso" badge. This section shows:
+
+- `hotelName` and `roomName`
+- `checkIn` and `checkOut` dates
+- `guests` count
+- `guestName` and `guestEmail`
+- `totalPrice`
+
+### Upcoming bookings
+
+Reservations where `checkIn` is still in the future appear under **Próximas Reservas** with a blue "Próxima" badge. Each card shows check-in and check-out dates, guest count, and total price. A **Cancelar Reserva** button is available for each upcoming booking.
+
+### Booking history
+
+Past bookings (where `checkOut` has already passed) appear in **Historial de Reservas** with a grey "Completada" badge. These cards are read-only.
+
+## Booking statuses explained
+
+The `status` field on a `Booking` record has five possible values:
+
+<AccordionGroup>
+  <Accordion title="confirmed">
+    The reservation has been accepted. The guest has not yet checked in. Bookings created through the standard flow start in this status. Cancellation is allowed while the booking is `confirmed`.
+  </Accordion>
+  <Accordion title="checked-in">
+    The guest has checked in. The associated room's `roomStatus` is `occupied`. This status is set by staff via the admin panel and is displayed as "En curso" in the UI.
+  </Accordion>
+  <Accordion title="checked-out">
+    The guest has checked out. The room's status moves to `cleaning`. Displayed as "Completada" in booking history.
+  </Accordion>
+  <Accordion title="cancelled">
+    The booking was cancelled. The `paymentStatus` is automatically set to `refunded`. Cancelled bookings cannot be reinstated.
+  </Accordion>
+  <Accordion title="pending">
+    An intermediate status available to admin/staff workflows. Not assigned through the standard customer booking flow.
+  </Accordion>
+</AccordionGroup>
+
+## Payment statuses
+
+The `paymentStatus` field tracks the financial state of a booking:
+
+| Status | Meaning |
+|---|---|
+| `paid` | Payment was received (set immediately for debit card payments) |
+| `pending` | Payment has not yet been confirmed (bank transfer or QR payments start here) |
+| `refunded` | Payment was reversed, typically after cancellation |
+
+## How to cancel a booking
+
+You can cancel any booking that still has a future `checkIn` date.
+
+<Steps>
+  <Step title="Go to My Bookings">
+    Navigate to `/my-bookings`. Upcoming reservations appear in the **Próximas Reservas** section.
+  </Step>
+  <Step title="Click Cancel">
+    Click **Cancelar Reserva** on the booking you want to cancel. A confirmation prompt appears.
+  </Step>
+  <Step title="Confirm cancellation">
+    Confirm the action. The booking's `status` is set to `cancelled` and `paymentStatus` is set to `refunded`.
+  </Step>
+</Steps>
+
+<Warning>
+  Cancellation is irreversible. Once a booking is cancelled, it cannot be reinstated through the application.
+</Warning>
+
+## Viewing invoice details
+
+Each completed or confirmed booking has a corresponding invoice. To view the invoice:
+
+1. Go to `/profile` and open the **Facturas** tab.
+2. Find the invoice by hotel name, room name, or issue date.
+3. Click **Ver Factura** to open a detail dialog showing subtotal, 16% taxes, any additional charges, and the payment method and status.
+4. Use **Descargar PDF** to print or save the invoice.
+
+Invoice fields include `subtotal`, `taxes`, `additionalCharges`, `total`, `paymentMethod`, and `paymentStatus`. The `issuedDate` is set to the moment the booking was confirmed.
+
+<Note>
+  After cancellation, the invoice's `paymentStatus` is updated to `refunded`. The invoice itself is retained in your invoice history and remains viewable.
+</Note>

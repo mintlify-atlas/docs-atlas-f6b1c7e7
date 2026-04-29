@@ -1,0 +1,150 @@
+---
+title: "Authentication with JWT in ViniHotel"
+description: "How to register, log in, and authenticate ViniHotel requests using JWT bearer tokens. Covers token storage, expiry, role encoding, and security best practices."
+---
+
+ViniHotel uses JSON Web Tokens (JWT) for authentication. After a successful login or registration, the backend returns a signed token that the client includes as a `Bearer` header on every subsequent authenticated request. Tokens are valid for 7 days by default and are stored in `localStorage` by the frontend's `apiClient`.
+
+## Authentication Flow
+
+<Steps>
+  <Step title="Register a new account">
+    Send a `POST` request to `/api/auth/register` with your name, email, and password. A token is returned immediately — no separate login step needed after registration.
+
+    ```bash
+    curl -X POST http://localhost:5000/api/auth/register \
+      -H "Content-Type: application/json" \
+      -d '{
+        "nombre": "Jane",
+        "apellido": "Doe",
+        "email": "jane@example.com",
+        "contrasena": "mysecretpassword"
+      }'
+    ```
+  </Step>
+
+  <Step title="Log in to receive a token">
+    Send a `POST` request to `/api/auth/login` with your email and password. The password field is named `contrasena` in the API (the frontend `apiClient` maps `password` → `contrasena` automatically).
+
+    ```bash
+    curl -X POST http://localhost:5000/api/auth/login \
+      -H "Content-Type: application/json" \
+      -d '{"email":"user@example.com","contrasena":"password123"}'
+    ```
+
+    A successful response includes a `token` field:
+
+    ```json
+    {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "user": {
+        "idUsuario": 1,
+        "nombre": "Juan",
+        "apellido": "García",
+        "email": "juan@example.com",
+        "rol": "client"
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Store the token">
+    The frontend stores the token in `localStorage` under the key `token`. The `apiClient` reads this value on initialization so authenticated requests work across page refreshes:
+
+    ```ts
+    this.token = localStorage.getItem('token');
+    ```
+  </Step>
+
+  <Step title="Include the token in requests">
+    All protected endpoints require an `Authorization` header with the `Bearer` scheme:
+
+    ```bash
+    curl -H "Authorization: Bearer YOUR_TOKEN" \
+      http://localhost:5000/api/auth/me
+    ```
+
+    The `apiClient` adds this header automatically to every request when a token is stored:
+
+    ```ts
+    headers['Authorization'] = `Bearer ${this.token}`;
+    ```
+  </Step>
+
+  <Step title="Log out">
+    Logging out clears the token from both memory and `localStorage`. No server-side call is needed — the token simply stops being sent.
+
+    ```ts
+    apiClient.clearToken();
+    localStorage.removeItem('token');
+    ```
+  </Step>
+</Steps>
+
+## Token Expiry
+
+Tokens expire after `JWT_EXPIRE` (default `7d`). When an expired or invalid token is sent, the backend returns:
+
+```json
+{ "error": "Invalid token" }
+```
+
+with HTTP status `401`. The frontend's `apiClient` intercepts `401` responses and redirects the user to `/login`:
+
+```ts
+if (response.status === 401) {
+  this.clearToken();
+  window.location.href = '/login';
+}
+```
+
+## User Roles
+
+The user's role is encoded in the JWT payload alongside `userId`:
+
+```js
+jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' })
+```
+
+Three roles exist:
+
+| Role | Access |
+|------|--------|
+| `client` | Default role. Can create and manage own bookings and invoices. |
+| `staff` | Can access staff-level routes in addition to client routes. |
+| `admin` | Full access, including hotel, room, and user management. |
+
+Role is checked per-route by `staffMiddleware` and `adminMiddleware` in `src/middleware/auth.js`. Attempting to access a restricted route with insufficient privileges returns HTTP `403`.
+
+## Test Credentials
+
+The server seeds these accounts automatically on first start if they don't already exist:
+
+<CodeGroup>
+  ```text Client account
+  Email:    juan@example.com
+  Password: password123
+  Role:     client
+  ```
+
+  ```text Admin account
+  Email:    admin@example.com
+  Password: admin123
+  Role:     admin
+  ```
+</CodeGroup>
+
+<Note>
+  A second client account (`maria@example.com` / `password123`) is also seeded for testing multi-user scenarios.
+</Note>
+
+## Security Best Practices
+
+<Warning>
+  The default `JWT_SECRET` value (`your_super_secret_jwt_key_change_this`) is public. Anyone who knows this value can forge valid tokens for any user in your system. Always replace it before deploying.
+</Warning>
+
+- **Change `JWT_SECRET`** to a random 64-byte hex string before going to production. See the [Environment Variables](/configuration/environment-variables) page for a generation command.
+- **Use HTTPS** in production. JWT tokens sent over plain HTTP can be intercepted and replayed.
+- **Never store passwords in the frontend.** Passwords are hashed with bcrypt on the backend before storage — the plaintext never persists.
+- **Never expose tokens in URLs.** Always pass tokens in the `Authorization` header, not as query parameters.

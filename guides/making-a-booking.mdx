@@ -1,0 +1,116 @@
+---
+title: "Make a Hotel Room Reservation"
+description: "Walk through the end-to-end booking flow in ViniHotel, from selecting a room to receiving confirmation and an auto-generated invoice."
+---
+
+Reserving a room in ViniHotel takes you through four pages: hotel detail, a booking dialog, the payment page, and the confirmation screen. The entire flow is covered in this guide from prerequisites through what happens after you confirm.
+
+## Prerequisites
+
+<Warning>
+  You must be logged in before you can view hotel details or make a reservation. Unauthenticated users are redirected to `/login`. If you do not have an account, register at `/register` first — new accounts are automatically signed in after registration.
+</Warning>
+
+## Booking flow
+
+<Steps>
+  <Step title="Browse to a hotel">
+    Go to the home page at `/` and find a hotel. Use the search box, filters, or sort order to narrow the list. Click **Ver detalles** or the hotel image to open the hotel detail page.
+
+    For a full walkthrough of the listing and filtering features, see [Browse and search hotels](/guides/browsing-hotels).
+  </Step>
+  <Step title="Select a room">
+    On the hotel detail page (`/hotel/:id`), scroll to **Habitaciones Disponibles**. Each room card shows the `type`, `capacity`, `price` per night, and available unit count. Click **Reservar Ahora** on the room you want. Rooms with `available === 0` or a status of `cleaning`, `maintenance`, or `unavailable` cannot be selected.
+  </Step>
+  <Step title="Choose check-in and check-out dates">
+    A dialog opens for that room. Select your **Fecha de entrada** (`checkIn`) and **Fecha de salida** (`checkOut`). The check-out date must be after the check-in date. Both dates are required — the confirm button stays disabled until valid dates are provided.
+
+    Once both dates are set, the dialog shows a live cost preview:
+
+    ```text
+    N noche(s) × $price = $totalPrice
+    ```
+  </Step>
+  <Step title="Specify the number of guests">
+    Enter the number of guests in the **Número de huéspedes** field. The value must be between 1 and the room's `capacity`. Exceeding the capacity blocks the booking with an alert.
+  </Step>
+  <Step title="Confirm guest details">
+    Review or update the **Nombre completo** (`guestName`) and **Email** (`guestEmail`) fields. These are pre-filled from your logged-in user profile. All four fields — dates, guests, name, and email — must be filled before **Confirmar Reserva** becomes active.
+  </Step>
+  <Step title="Select a payment method and review the summary">
+    After clicking **Confirmar Reserva**, you are taken to the payment page (`/payment`). The left panel shows a booking summary:
+
+    | Field | Value |
+    |---|---|
+    | Hotel & room | `hotelName` / `roomName` |
+    | Check-in | `checkIn` |
+    | Check-out | `checkOut` |
+    | Guests | `guests` |
+    | Subtotal | `totalPrice` |
+    | Taxes (16%) | `totalPrice × 0.16` |
+    | **Total** | `totalPrice × 1.16` |
+
+    Choose a payment method:
+
+    - **credit_card** — credit card payment
+    - **debit-card** — debit card; payment status is automatically set to `paid`
+    - **paypal** — PayPal payment
+    - **twallet** — T-Wallet digital payment
+
+    Accept the terms and conditions checkbox, then click **Confirmar y Pagar**.
+  </Step>
+  <Step title="Receive booking confirmation">
+    A successful payment sends you to `/booking-confirmation`. The page displays a confirmation number and all booking details: hotel, room, dates, guest count, guest name, email, and total paid. Confirmation details are also emailed to `guestEmail`.
+
+    Use the **Ver Mis Reservas** button to navigate to `/my-bookings`, or **Imprimir** to print the page.
+  </Step>
+</Steps>
+
+## What happens after confirmation
+
+When a booking is created, the `BookingContext` sets the following initial field values:
+
+| Field | Initial value |
+|---|---|
+| `status` | `confirmed` |
+| `paymentStatus` | `paid` (debit card) or `pending` (transfer / QR) |
+| `createdAt` | Current ISO timestamp |
+
+### Booking statuses
+
+| Status | Meaning |
+|---|---|
+| `confirmed` | Reservation accepted, awaiting check-in |
+| `checked-in` | Guest has checked in; room is `occupied` |
+| `checked-out` | Guest has completed their stay; room moves to `cleaning` |
+| `cancelled` | Booking was cancelled; payment moves to `refunded` |
+
+### Payment statuses
+
+| Status | Meaning |
+|---|---|
+| `pending` | Payment not yet received (transfer or QR) |
+| `paid` | Payment confirmed |
+| `refunded` | Payment reversed after cancellation |
+
+## Invoice generation
+
+An invoice is created automatically alongside every booking. The `Invoice` record includes:
+
+```json
+{
+  "id": "invoice-uuid",
+  "bookingId": "booking-uuid",
+  "subtotal": 720.00,
+  "taxes": 108.00,
+  "total": 828.00,
+  "additionalCharges": {},
+  "paymentMethod": "credit_card",
+  "paymentStatus": "pending",
+  "issuedDate": "2026-04-29 14:30:00"
+}
+```
+
+The `additionalCharges` field is a JSON object. It defaults to an empty object `{}` and can contain any extra charge keys such as `resort_fee`, `service_charge`, or `parking`.
+
+You can view and download invoices from the **Facturas** tab on your profile page at `/profile`.

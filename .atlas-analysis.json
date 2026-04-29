@@ -1,0 +1,89 @@
+{
+  "projectType": "saas",
+  "projectName": "ViniHotel",
+  "projectDescription": "A full-stack hotel booking platform with React frontend and Node.js/Express backend, featuring hotel browsing, room reservations, invoicing, and role-based staff management.",
+  "theme": "almond",
+  "primaryColor": "#f76040",
+  "lightColor": "#13c5be",
+  "darkColor": "#a35cfb",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["introduction", "quickstart", "architecture"]
+          },
+          {
+            "group": "User Guides",
+            "pages": ["guides/browsing-hotels", "guides/making-a-booking", "guides/managing-bookings", "guides/user-profile"]
+          },
+          {
+            "group": "Admin & Staff",
+            "pages": ["guides/hotel-management", "guides/staff-management", "guides/housekeeping", "guides/reports"]
+          },
+          {
+            "group": "Configuration",
+            "pages": ["configuration/environment-variables", "configuration/database", "configuration/authentication"]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["api/overview", "api/authentication"]
+          },
+          {
+            "group": "Endpoints",
+            "pages": ["api/hotels", "api/rooms", "api/bookings", "api/invoices"]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Hotel browsing with search and filtering",
+    "Room availability checking by date range",
+    "Online booking with payment method selection",
+    "Invoice generation and management",
+    "Role-based access control (client, staff, admin)",
+    "Staff management with hotel assignment",
+    "Housekeeping and booking management dashboards",
+    "Admin reports and analytics",
+    "JWT-based authentication with auto token refresh",
+    "SQLite database with automatic initialization and sample data"
+  ],
+  "publicApiSurface": [
+    "POST /api/auth/register",
+    "POST /api/auth/login",
+    "GET /api/auth/me",
+    "PUT /api/auth/profile",
+    "GET /api/hotels",
+    "GET /api/hotels/:idHotel",
+    "POST /api/hotels",
+    "PUT /api/hotels/:idHotel",
+    "DELETE /api/hotels/:idHotel",
+    "GET /api/rooms",
+    "GET /api/rooms/hotel/:hotelId",
+    "GET /api/rooms/:id",
+    "POST /api/rooms",
+    "PUT /api/rooms/:id",
+    "DELETE /api/rooms/:id",
+    "POST /api/rooms/check-availability",
+    "GET /api/bookings/my-bookings",
+    "GET /api/bookings/:id",
+    "POST /api/bookings",
+    "PUT /api/bookings/:id",
+    "POST /api/bookings/:id/cancel",
+    "GET /api/bookings",
+    "GET /api/invoices/my-invoices",
+    "GET /api/invoices/:id",
+    "POST /api/invoices",
+    "PUT /api/invoices/:id",
+    "GET /api/invoices",
+    "GET /api/health"
+  ]
+}

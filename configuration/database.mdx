@@ -1,0 +1,284 @@
+---
+title: "ViniHotel Database Schema and Structure"
+description: "Complete reference for the ViniHotel SQLite database: all 7 tables, their columns, foreign key relationships, indexes, and useful SQL queries."
+---
+
+ViniHotel uses SQLite3 as its database, stored at `backend/data/vinihotel.db`. The file and its parent directory are created automatically the first time the server starts — you never need to create them manually. All table definitions live in `backend/src/utils/database.js` and are applied via `CREATE TABLE IF NOT EXISTS` statements inside the `initializeDatabase()` function called at server boot.
+
+## Database Location
+
+```text
+backend/
+└── data/
+    └── vinihotel.db   ← SQLite file, auto-created on first run
+```
+
+<Note>
+  To inspect the database directly, use [DB Browser for SQLite](https://sqlitebrowser.org/), the VS Code "SQLite" extension (`ms-vscode.sqlite`), or the command-line tool: `sqlite3 backend/data/vinihotel.db`.
+</Note>
+
+## Tables
+
+### usuarios
+
+Stores all user accounts — clients, staff members, and admins.
+
+| Column | Type | Constraint | Description |
+|--------|------|------------|-------------|
+| `idUsuario` | INTEGER | PK, AUTOINCREMENT | Unique user ID |
+| `nombre` | TEXT | NOT NULL | First name |
+| `apellido` | TEXT | NOT NULL | Last name |
+| `email` | TEXT | NOT NULL, UNIQUE | Login email |
+| `contrasena` | TEXT | NOT NULL | bcrypt-hashed password |
+| `rol` | TEXT | DEFAULT `'client'` | `client` / `staff` / `admin` |
+| `phone` | TEXT | — | Contact phone number |
+| `address` | TEXT | — | Address |
+| `dateOfBirth` | DATE | — | Date of birth |
+| `nationality` | TEXT | — | Nationality |
+| `documentId` | TEXT | — | Passport or ID number |
+| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
+| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+
+---
+
+### clientes
+
+Holds client-specific profile data in a one-to-one relationship with `usuarios`.
+
+| Column | Type | Constraint | Description |
+|--------|------|------------|-------------|
+| `idCliente` | INTEGER | PK, AUTOINCREMENT | Unique client ID |
+| `telefono` | TEXT | — | Client phone number |
+| `documentoIdentidad` | TEXT | — | Identity document |
+| `idUsuario` | INTEGER | FK, UNIQUE | References `usuarios(idUsuario)` |
+| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
+| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+
+Deleting a `usuarios` row cascades and removes the linked `clientes` row automatically (`ON DELETE CASCADE`).
+
+---
+
+### hoteles
+
+Stores hotel listings.
+
+| Column | Type | Constraint | Description |
+|--------|------|------------|-------------|
+| `idHotel` | TEXT | PK | UUID |
+| `nombre` | TEXT | NOT NULL | Hotel name |
+| `description` | TEXT | NOT NULL | Full description |
+| `location` | TEXT | NOT NULL | Geographic location |
+| `image` | TEXT | NOT NULL | URL of the main image |
+| `rating` | REAL | NOT NULL | Rating from 0 to 5 |
+| `amenities` | TEXT | NOT NULL | JSON array of amenities |
+| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
+| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+
+The `amenities` field is stored as a JSON array:
+
+```json
+["WiFi", "Piscina", "Gym", "Spa", "Restaurante 24/7", "Servicio de habitaciones"]
+```
+
+---
+
+### rooms
+
+Hotel rooms, each belonging to a hotel.
+
+| Column | Type | Constraint | Description |
+|--------|------|------------|-------------|
+| `id` | TEXT | PK | UUID |
+| `hotelId` | TEXT | FK NOT NULL | References `hoteles(idHotel)` |
+| `name` | TEXT | NOT NULL | Room name (e.g., Suite Presidencial) |
+| `type` | TEXT | NOT NULL | `standard` / `deluxe` / `suite` / etc. |
+| `price` | REAL | NOT NULL | Price per night in USD |
+| `capacity` | INTEGER | NOT NULL | Maximum number of guests |
+| `image` | TEXT | NOT NULL | URL of the room image |
+| `amenities` | TEXT | NOT NULL | JSON array of room amenities |
+| `available` | INTEGER | DEFAULT `1` | Number of units available (stock) |
+| `status` | TEXT | DEFAULT `'available'` | `available` / `occupied` / `maintenance` / `cleaning` / `unavailable` |
+| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
+| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+
+---
+
+### bookings
+
+Reservation records linking a room to a client.
+
+| Column | Type | Constraint | Description |
+|--------|------|------------|-------------|
+| `id` | TEXT | PK | UUID |
+| `roomId` | TEXT | FK NOT NULL | References `rooms(id)` |
+| `idCliente` | INTEGER | FK NOT NULL | References `clientes(idCliente)` |
+| `checkIn` | DATE | NOT NULL | Check-in date |
+| `checkOut` | DATE | NOT NULL | Check-out date |
+| `guests` | INTEGER | NOT NULL | Number of guests |
+| `totalPrice` | REAL | NOT NULL | Total price in USD |
+| `paymentMethod` | TEXT | NOT NULL | `credit_card` / `debit-card` / `paypal` / `twallet` |
+| `status` | TEXT | DEFAULT `'confirmed'` | `confirmed` / `checked-in` / `checked-out` / `cancelled` |
+| `paymentStatus` | TEXT | DEFAULT `'pending'` | `pending` / `paid` / `refunded` |
+| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
+| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+
+---
+
+### invoices
+
+Payment invoices associated with bookings.
+
+| Column | Type | Constraint | Description |
+|--------|------|------------|-------------|
+| `id` | TEXT | PK | UUID |
+| `bookingId` | TEXT | FK NOT NULL | References `bookings(id)` |
+| `userId` | INTEGER | FK NOT NULL | References `usuarios(idUsuario)` |
+| `subtotal` | REAL | NOT NULL | Amount before taxes |
+| `taxes` | REAL | NOT NULL | Tax amount |
+| `total` | REAL | NOT NULL | Final total (`subtotal + taxes`) |
+| `additionalCharges` | TEXT | — | JSON object with extra charges |
+| `paymentMethod` | TEXT | NOT NULL | Payment method used |
+| `paymentStatus` | TEXT | DEFAULT `'pending'` | `pending` / `paid` / `failed` / `refunded` |
+| `issuedDate` | DATETIME | DEFAULT NOW | Invoice issue time |
+| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
+| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+
+The `additionalCharges` field is a JSON object:
+
+```json
+{
+  "resort_fee": 15.00,
+  "service_charge": 20.50,
+  "parking": 10.00
+}
+```
+
+---
+
+### staff
+
+Hotel staff members.
+
+| Column | Type | Constraint | Description |
+|--------|------|------------|-------------|
+| `id` | TEXT | PK | UUID |
+| `name` | TEXT | NOT NULL | Full name |
+| `position` | TEXT | NOT NULL | `receptionist` / `housekeeper` / `manager` |
+| `hotelId` | TEXT | FK NOT NULL | References `hoteles(idHotel)` |
+| `email` | TEXT | NOT NULL | Contact email |
+| `phone` | TEXT | — | Phone number |
+| `status` | TEXT | DEFAULT `'active'` | `active` / `inactive` / `on-leave` |
+| `hireDate` | DATE | NOT NULL | Date hired |
+| `idUsuario` | INTEGER | FK | References `usuarios(idUsuario)` (optional) |
+| `createdAt` | DATETIME | DEFAULT NOW | Record creation time |
+| `updatedAt` | DATETIME | DEFAULT NOW | Last update time |
+
+A staff member may or may not have a linked `usuarios` account.
+
+---
+
+## Entity Relationships
+
+```text
+USUARIOS
+  ├─ 1:1 ─────> CLIENTES
+  ├─ 1:N ─────> STAFF
+  └─ 1:N ─────> INVOICES
+
+HOTELES
+  ├─ 1:N ─────> ROOMS
+  └─ 1:N ─────> STAFF
+
+ROOMS
+  └─ 1:N ─────> BOOKINGS
+
+CLIENTES
+  └─ 1:N ─────> BOOKINGS
+
+BOOKINGS
+  └─ 1:N ─────> INVOICES
+```
+
+A single booking can have multiple invoices (e.g., for partial payments or refunds).
+
+## Indexes
+
+All indexes are created by `initializeDatabase()` to optimize the most common join and lookup patterns:
+
+```sql
+CREATE INDEX idx_rooms_hotelId       ON rooms(hotelId);
+CREATE INDEX idx_clientes_idUsuario  ON clientes(idUsuario);
+CREATE INDEX idx_staff_hotelId       ON staff(hotelId);
+CREATE INDEX idx_bookings_roomId     ON bookings(roomId);
+CREATE INDEX idx_bookings_idCliente  ON bookings(idCliente);
+CREATE INDEX idx_invoices_bookingId  ON invoices(bookingId);
+CREATE INDEX idx_usuarios_email      ON usuarios(email);
+```
+
+## Useful SQL Queries
+
+<AccordionGroup>
+  <Accordion title="Revenue by hotel">
+    ```sql
+    SELECT h.nombre, SUM(i.total) AS ingresos
+    FROM invoices i
+    JOIN bookings b  ON i.bookingId = b.id
+    JOIN rooms r     ON b.roomId    = r.id
+    JOIN hoteles h   ON r.hotelId   = h.idHotel
+    GROUP BY h.idHotel;
+    ```
+  </Accordion>
+
+  <Accordion title="Check room availability">
+    ```sql
+    SELECT * FROM rooms WHERE id = 'room-uuid' AND available > 0;
+    ```
+  </Accordion>
+
+  <Accordion title="All bookings for a client">
+    ```sql
+    SELECT b.*
+    FROM bookings b
+    JOIN clientes c ON b.idCliente = c.idCliente
+    WHERE c.idUsuario = 1;
+    ```
+  </Accordion>
+
+  <Accordion title="Detect overlapping bookings">
+    ```sql
+    SELECT * FROM bookings
+    WHERE roomId = 'room-uuid'
+      AND status != 'cancelled'
+      AND checkIn  < '2026-05-01'
+      AND checkOut > '2026-04-20';
+    ```
+  </Accordion>
+
+  <Accordion title="Most frequent clients">
+    ```sql
+    SELECT u.nombre, u.apellido, COUNT(b.id) AS reservas
+    FROM bookings b
+    JOIN clientes c ON b.idCliente  = c.idCliente
+    JOIN usuarios u ON c.idUsuario  = u.idUsuario
+    GROUP BY u.idUsuario
+    ORDER BY reservas DESC
+    LIMIT 10;
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## SQLite Configuration
+
+The database connection in `src/utils/database.js` applies the following PRAGMAs for reliability and performance:
+
+```sql
+PRAGMA foreign_keys = ON;
+PRAGMA journal_mode = WAL;
+PRAGMA synchronous  = NORMAL;
+PRAGMA cache_size   = -64000;
+PRAGMA temp_store   = MEMORY;
+PRAGMA mmap_size    = 30000000;
+PRAGMA page_size    = 4096;
+```
+
+A `busyTimeout` of 5000 ms is also set to handle concurrent write contention gracefully.

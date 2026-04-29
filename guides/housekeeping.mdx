@@ -1,0 +1,124 @@
+---
+title: "Housekeeping and Room Status Management"
+description: "Monitor and update room status across ViniHotel properties. Manage available, occupied, cleaning, and maintenance states from the staff housekeeping dashboard."
+---
+
+The housekeeping dashboard provides a live view of every room's current operational status across all hotels in the chain. It is accessible at the `/housekeeping` route and is designed for day-to-day use by housekeeping staff and front-desk receptionists. The dashboard is organized by hotel, showing each room as a status card that can be updated with a single click. It also includes an inline form for adding new rooms directly without leaving the page.
+
+<Note>
+  The housekeeping panel is accessible to users with the **staff** and **admin** roles.
+</Note>
+
+## Dashboard overview
+
+At the top of the page, four summary cards show the live count of rooms in each state across all properties:
+
+<CardGroup cols={4}>
+  <Card title="Disponibles" icon="check-circle">
+    Rooms that are clean, vacant, and ready to accept a new guest or booking. Shown with a green border.
+  </Card>
+  <Card title="Ocupadas" icon="clock">
+    Rooms with a guest currently checked in. Shown with a blue border.
+  </Card>
+  <Card title="En Limpieza" icon="sparkles">
+    Rooms actively being cleaned after a checkout. Shown with a yellow border. Labeled **Requieren atención**.
+  </Card>
+  <Card title="Mantenimiento" icon="wrench">
+    Rooms out of service for repairs. Shown with a red border. Labeled **Fuera de servicio**.
+  </Card>
+</CardGroup>
+
+Below the summary, a search bar and status filter let you narrow the room list by name or by status. Rooms are then grouped under their hotel name, with the total room count for each property shown on the right.
+
+## Room statuses
+
+The housekeeping panel uses four real-time statuses for room cards. These correspond to the `status` field on the `rooms` table and the `RoomStatus` type in the frontend.
+
+| Status | Label | Meaning |
+|--------|-------|---------|
+| `available` | Disponible | Room is clean and ready. Guests can be checked in and new bookings are accepted. |
+| `occupied` | Ocupado | A guest is currently in the room. Check-out is available; check-in and new bookings are blocked. |
+| `cleaning` | Limpieza | Room is being cleaned post-checkout. All booking and check-in actions are blocked until status returns to `available`. |
+| `maintenance` | Mantenimiento | Room is undergoing repairs or is otherwise unfit for guests. No bookings or check-ins permitted. |
+
+Status constraints are enforced at the API level via `getRoomStatusConstraints(status)` in `roomModel.js`:
+
+```js
+// roomModel.js
+const constraints = {
+  'available':    { canBook: true,  canCheckIn: false, canCheckOut: false },
+  'occupied':     { canBook: false, canCheckIn: false, canCheckOut: true  },
+  'cleaning':     { canBook: false, canCheckIn: false, canCheckOut: false },
+  'maintenance':  { canBook: false, canCheckIn: false, canCheckOut: false },
+  'unavailable':  { canBook: false, canCheckIn: false, canCheckOut: false }
+};
+```
+
+## Updating a room status
+
+Each room card shows four action buttons: **Disponible**, **Ocupado**, **Limpieza**, and **Mantenimiento**. The active status button appears highlighted. Clicking any button immediately updates both the in-memory `roomStatuses` state and the persisted `rooms` store.
+
+<Steps>
+  <Step title="Locate the room">
+    Use the search bar to filter by room name, or use the **Estado** dropdown to show only rooms in a specific status (e.g. filter to **En limpieza** to find all rooms awaiting sign-off).
+  </Step>
+  <Step title="Review the current status">
+    Each card displays the room name, current status badge, and the timestamp of the last status change (shown as a time in `HH:MM` format under the room name).
+  </Step>
+  <Step title="Set the new status">
+    Click one of the four status buttons on the card. The card border color and badge update instantly to reflect the new state.
+  </Step>
+  <Step title="Confirm the room is ready">
+    After cleaning, click **Disponible** to mark the room ready for the next guest. This re-enables booking and check-in for that room.
+  </Step>
+</Steps>
+
+## Post-checkout cleaning workflow
+
+The typical room turnaround sequence after a guest checks out is:
+
+<Steps>
+  <Step title="Guest checks out">
+    Staff processes the checkout in the booking management panel. The booking status transitions to `completed`.
+  </Step>
+  <Step title="Mark room as Limpieza">
+    In the housekeeping dashboard, find the room and click **Limpieza**. This flags the room as needing attention and prevents new check-ins.
+  </Step>
+  <Step title="Clean the room">
+    Housekeeping staff attend to the room — linen change, restocking, and inspection.
+  </Step>
+  <Step title="Mark room as Disponible">
+    Once cleaning is complete, click **Disponible** on the room card. The room is now bookable and can accept the next check-in.
+  </Step>
+</Steps>
+
+<Tip>
+  Use the **En Limpieza** status filter to get a focused view of all rooms currently awaiting cleaning across the property. This helps prioritize turnaround during high-occupancy periods.
+</Tip>
+
+## Adding a new room
+
+The housekeeping page includes a **Añadir habitación** section that allows rooms to be created without navigating to a separate admin page.
+
+<Steps>
+  <Step title="Select the hotel">
+    Choose the target hotel from the **Selecciona hotel** dropdown. The list is populated from all registered hotels.
+  </Step>
+  <Step title="Fill in room details">
+    Enter the room **Nombre habitación**, **Tipo** (e.g. `Doble`, `Suite`), **Precio** (per night in USD), **Capacidad** (max guests), and **Disponibles** (stock count).
+  </Step>
+  <Step title="Click Agregar habitación">
+    The new room is created with `status: 'available'` and default amenities `["Cama King", "WiFi"]`. It immediately appears in the hotel's room list on the dashboard.
+  </Step>
+</Steps>
+
+<Note>
+  Rooms added from the housekeeping panel use a timestamp-based ID (`r${Date.now()}`) and a default room image. For full control over all fields including a custom image URL and amenity list, use the rooms API directly with an admin account.
+</Note>
+
+## Best practices
+
+- Set rooms to **Limpieza** immediately after a checkout is processed so the status reflects reality for other staff checking the dashboard.
+- Use **Mantenimiento** for any room that is not safe or ready for guests, even if cleaning is not the issue — this blocks accidental bookings.
+- Check the summary cards at the start of each shift to get a quick picture of room availability before the front desk begins taking walk-in requests.
+- Resolve **En Limpieza** rooms promptly during high-demand periods — rooms stuck in `cleaning` status cannot be booked or checked into, directly impacting occupancy.

@@ -1,126 +1,64 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "ViniHotel",
+  "theme": "almond",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#f76040",
+    "light": "#13c5be",
+    "dark": "#a35cfb"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "https://media.brand.dev/c219dc98-9ece-432d-a19a-173b64c97c8f.jpg",
+  "logo": {
+    "light": "https://media.brand.dev/b68fb600-5011-44b4-b123-7187e25f17e1.jpg",
+    "dark": "https://media.brand.dev/b68fb600-5011-44b4-b123-7187e25f17e1.jpg"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/viniciusmontibeller33-spec/ViniHotel-01"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/viniciusmontibeller33-spec/ViniHotel-01"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
+            "group": "Get Started",
+            "pages": ["introduction", "quickstart", "architecture"]
           },
           {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
+            "group": "User Guides",
+            "pages": ["guides/browsing-hotels", "guides/making-a-booking", "guides/managing-bookings", "guides/user-profile"]
           },
           {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/components",
-              "essentials/reusable-snippets"
-            ]
+            "group": "Admin & Staff",
+            "pages": ["guides/hotel-management", "guides/staff-management", "guides/housekeeping", "guides/reports"]
           },
           {
-            "group": "Agent ready",
-            "pages": [
-              "agent-ready/prompt",
-              "agent-ready/visibility",
-              "agent-ready/contextual",
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
+            "group": "Configuration",
+            "pages": ["configuration/environment-variables", "configuration/database", "configuration/authentication"]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
+            "group": "Overview",
+            "pages": ["api/overview", "api/authentication"]
           },
           {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
-            ]
+            "group": "Endpoints",
+            "pages": ["api/hotels", "api/rooms", "api/bookings", "api/invoices"]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

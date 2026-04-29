@@ -1,0 +1,413 @@
+---
+title: "Rooms API — Manage and Check Room Availability"
+description: "Full reference for ViniHotel room endpoints: list rooms, filter by hotel, check date availability, and manage room inventory with admin-only CRUD operations."
+---
+
+The Rooms API exposes all room data within ViniHotel. Rooms belong to hotels via the `hotelId` foreign key and can be queried publicly. Use the availability endpoint before creating a booking to confirm a room is free for your requested dates and guest count.
+
+<Note>
+  Endpoints marked **admin only** require a valid JWT with `rol: "admin"` passed in the `Authorization` header as `Bearer <token>`.
+</Note>
+
+---
+
+## GET /api/rooms
+
+Returns all rooms across every hotel. No authentication required.
+
+### Response
+
+<ResponseField name="[]" type="object[]">
+  Array of room objects.
+  <Expandable title="room object properties">
+    <ResponseField name="id" type="string" required>
+      UUID of the room.
+    </ResponseField>
+    <ResponseField name="hotelId" type="string" required>
+      UUID of the hotel this room belongs to.
+    </ResponseField>
+    <ResponseField name="name" type="string" required>
+      Room name, e.g. `"Suite Presidencial"`.
+    </ResponseField>
+    <ResponseField name="type" type="string" required>
+      Room type: `standard`, `deluxe`, `suite`, or similar.
+    </ResponseField>
+    <ResponseField name="price" type="number" required>
+      Price per night in USD.
+    </ResponseField>
+    <ResponseField name="capacity" type="integer" required>
+      Maximum number of guests.
+    </ResponseField>
+    <ResponseField name="image" type="string" required>
+      URL of the room's image.
+    </ResponseField>
+    <ResponseField name="amenities" type="string[]" required>
+      Parsed array of room amenities.
+    </ResponseField>
+    <ResponseField name="available" type="integer" required>
+      Number of available units (stock). Defaults to `1`.
+    </ResponseField>
+    <ResponseField name="status" type="string" required>
+      Current status: `available`, `occupied`, `maintenance`, `cleaning`, or `unavailable`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example
+
+```bash
+curl http://localhost:5000/api/rooms
+```
+
+```json
+[
+  {
+    "id": "room-uuid-1234",
+    "hotelId": "hotel-uuid-5678",
+    "name": "Suite Presidencial",
+    "type": "suite",
+    "price": 350.00,
+    "capacity": 4,
+    "image": "https://example.com/images/suite-presidencial.jpg",
+    "amenities": ["King Bed", "Jacuzzi", "Sea View", "Mini Bar"],
+    "available": 1,
+    "status": "available"
+  }
+]
+```
+
+---
+
+## GET /api/rooms/hotel/:hotelId
+
+Returns all rooms belonging to a specific hotel. No authentication required.
+
+### Path parameters
+
+<ParamField path="hotelId" type="string" required>
+  UUID of the hotel whose rooms you want to retrieve.
+</ParamField>
+
+### Response
+
+<ResponseField name="[]" type="object[]">
+  Array of room objects for the specified hotel. Each object has the same fields as the full room list response above.
+</ResponseField>
+
+### Example
+
+```bash
+curl http://localhost:5000/api/rooms/hotel/hotel-uuid-5678
+```
+
+```json
+[
+  {
+    "id": "room-uuid-1234",
+    "hotelId": "hotel-uuid-5678",
+    "name": "Suite Presidencial",
+    "type": "suite",
+    "price": 350.00,
+    "capacity": 4,
+    "image": "https://example.com/images/suite-presidencial.jpg",
+    "amenities": ["King Bed", "Jacuzzi", "Sea View", "Mini Bar"],
+    "available": 1,
+    "status": "available"
+  }
+]
+```
+
+---
+
+## GET /api/rooms/:id
+
+Returns a single room by its UUID. No authentication required.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  UUID of the room to retrieve.
+</ParamField>
+
+### Response
+
+<ResponseField name="id" type="string" required>
+  UUID of the room.
+</ResponseField>
+<ResponseField name="hotelId" type="string" required>
+  UUID of the hotel this room belongs to.
+</ResponseField>
+<ResponseField name="name" type="string" required>
+  Room name.
+</ResponseField>
+<ResponseField name="type" type="string" required>
+  Room type.
+</ResponseField>
+<ResponseField name="price" type="number" required>
+  Price per night in USD.
+</ResponseField>
+<ResponseField name="capacity" type="integer" required>
+  Maximum number of guests.
+</ResponseField>
+<ResponseField name="image" type="string" required>
+  URL of the room's image.
+</ResponseField>
+<ResponseField name="amenities" type="string[]" required>
+  Parsed array of room amenities.
+</ResponseField>
+<ResponseField name="available" type="integer" required>
+  Number of available units.
+</ResponseField>
+<ResponseField name="status" type="string" required>
+  Current room status.
+</ResponseField>
+
+### Example
+
+```bash
+curl http://localhost:5000/api/rooms/room-uuid-1234
+```
+
+```json
+{
+  "id": "room-uuid-1234",
+  "hotelId": "hotel-uuid-5678",
+  "name": "Suite Presidencial",
+  "type": "suite",
+  "price": 350.00,
+  "capacity": 4,
+  "image": "https://example.com/images/suite-presidencial.jpg",
+  "amenities": ["King Bed", "Jacuzzi", "Sea View", "Mini Bar"],
+  "available": 1,
+  "status": "available"
+}
+```
+
+<Warning>
+  Returns `404` with `{ "error": "Habitación no encontrada" }` if no room exists with the given `id`.
+</Warning>
+
+---
+
+## POST /api/rooms/check-availability
+
+Checks whether a room is available for a given date range and guest count. No authentication required.
+
+The endpoint validates three things in order: the room's current `status`, whether the guest count exceeds `capacity`, and whether any non-cancelled booking already overlaps the requested dates.
+
+<Note>
+  Rooms with status `maintenance` or `unavailable` are always returned as unavailable regardless of dates.
+</Note>
+
+### Body parameters
+
+<ParamField body="roomId" type="string" required>
+  UUID of the room to check.
+</ParamField>
+<ParamField body="checkIn" type="string" required>
+  Check-in date in ISO 8601 format: `"YYYY-MM-DD"`.
+</ParamField>
+<ParamField body="checkOut" type="string" required>
+  Check-out date in ISO 8601 format: `"YYYY-MM-DD"`.
+</ParamField>
+<ParamField body="guests" type="integer">
+  Number of guests. If provided, the server validates against the room's `capacity`.
+</ParamField>
+
+### Response
+
+<ResponseField name="available" type="boolean" required>
+  `true` if the room can be booked for the given dates; `false` otherwise.
+</ResponseField>
+<ResponseField name="reason" type="string" required>
+  Human-readable explanation, e.g. `"Habitación disponible"` or `"Habitación no disponible en esas fechas"`.
+</ResponseField>
+
+### Example
+
+```bash
+curl -X POST http://localhost:5000/api/rooms/check-availability \
+  -H "Content-Type: application/json" \
+  -d '{"roomId":"room-uuid-1234","checkIn":"2026-05-01","checkOut":"2026-05-05"}'
+```
+
+```json
+{
+  "available": true,
+  "reason": "Habitación disponible"
+}
+```
+
+---
+
+## POST /api/rooms
+
+Creates a new room and associates it with a hotel. **Admin only.**
+
+<Note>
+  Requires `Authorization: Bearer <token>` with a JWT issued to a user with `rol: "admin"`.
+</Note>
+
+### Body parameters
+
+<ParamField body="hotelId" type="string" required>
+  UUID of the hotel this room belongs to.
+</ParamField>
+<ParamField body="name" type="string" required>
+  Room name, e.g. `"Suite Presidencial"`.
+</ParamField>
+<ParamField body="type" type="string" required>
+  Room category: `standard`, `deluxe`, `suite`, or any custom value.
+</ParamField>
+<ParamField body="price" type="number" required>
+  Price per night in USD.
+</ParamField>
+<ParamField body="capacity" type="integer" required>
+  Maximum number of guests allowed.
+</ParamField>
+<ParamField body="image" type="string" required>
+  URL of the room's image.
+</ParamField>
+<ParamField body="amenities" type="string[]" required>
+  JSON array of amenity strings.
+</ParamField>
+<ParamField body="available" type="integer" default="1">
+  Number of available units. Defaults to `1` if omitted.
+</ParamField>
+<ParamField body="status" type="string" default="available">
+  Initial room status. One of: `available`, `occupied`, `maintenance`, `cleaning`, `unavailable`. Defaults to `"available"`.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string" required>
+  Confirmation: `"Habitación creada exitosamente"`.
+</ResponseField>
+<ResponseField name="id" type="string" required>
+  UUID assigned to the newly created room.
+</ResponseField>
+
+### Example
+
+```bash
+curl -X POST http://localhost:5000/api/rooms \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <admin_token>" \
+  -d '{
+    "hotelId": "hotel-uuid-5678",
+    "name": "Deluxe Double",
+    "type": "deluxe",
+    "price": 180.00,
+    "capacity": 2,
+    "image": "https://example.com/images/deluxe-double.jpg",
+    "amenities": ["Queen Bed", "City View", "Mini Bar"],
+    "available": 3,
+    "status": "available"
+  }'
+```
+
+```json
+{
+  "message": "Habitación creada exitosamente",
+  "id": "room-uuid-abcd"
+}
+```
+
+---
+
+## PUT /api/rooms/:id
+
+Updates an existing room. **Admin only.** You may send any subset of the room fields.
+
+<Note>
+  Requires `Authorization: Bearer <token>` with a JWT issued to a user with `rol: "admin"`.
+</Note>
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  UUID of the room to update.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="name" type="string">
+  Updated room name.
+</ParamField>
+<ParamField body="type" type="string">
+  Updated room type.
+</ParamField>
+<ParamField body="price" type="number">
+  Updated price per night in USD.
+</ParamField>
+<ParamField body="capacity" type="integer">
+  Updated maximum guest capacity.
+</ParamField>
+<ParamField body="image" type="string">
+  Updated image URL.
+</ParamField>
+<ParamField body="amenities" type="string[]">
+  Updated amenities array.
+</ParamField>
+<ParamField body="available" type="integer">
+  Updated available unit count.
+</ParamField>
+<ParamField body="status" type="string">
+  Updated room status: `available`, `occupied`, `maintenance`, `cleaning`, or `unavailable`.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string" required>
+  Confirmation: `"Habitación actualizada exitosamente"`.
+</ResponseField>
+
+### Example
+
+```bash
+curl -X PUT http://localhost:5000/api/rooms/room-uuid-1234 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <admin_token>" \
+  -d '{"status": "maintenance", "available": 0}'
+```
+
+```json
+{
+  "message": "Habitación actualizada exitosamente"
+}
+```
+
+---
+
+## DELETE /api/rooms/:id
+
+Permanently removes a room from the system. **Admin only.**
+
+<Warning>
+  This action is irreversible. Requires `Authorization: Bearer <token>` with `rol: "admin"`.
+</Warning>
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  UUID of the room to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string" required>
+  Confirmation: `"Habitación eliminada exitosamente"`.
+</ResponseField>
+
+### Example
+
+```bash
+curl -X DELETE http://localhost:5000/api/rooms/room-uuid-1234 \
+  -H "Authorization: Bearer <admin_token>"
+```
+
+```json
+{
+  "message": "Habitación eliminada exitosamente"
+}
+```

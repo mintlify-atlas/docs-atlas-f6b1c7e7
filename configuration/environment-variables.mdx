@@ -1,0 +1,100 @@
+---
+title: "Environment Variables Reference"
+description: "Complete reference for all environment variables the ViniHotel backend supports, including defaults, required fields, and production guidance."
+---
+
+The ViniHotel backend is configured entirely through environment variables loaded via `dotenv`. Create a `.env` file in the `backend/` directory before starting the server — the application reads these values at startup using `dotenv.config()` in `server.js`.
+
+## Example .env File
+
+Place this file at `backend/.env`:
+
+```text
+PORT=5000
+DATABASE_PATH=./data/vinihotel.db
+JWT_SECRET=your_super_secret_jwt_key_change_this
+JWT_EXPIRE=7d
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:5173
+```
+
+<Warning>
+  Never commit your `.env` file to version control. The backend's `.gitignore` already excludes it. Committing a real `JWT_SECRET` would allow anyone to forge authentication tokens for your application.
+</Warning>
+
+## Variable Reference
+
+<AccordionGroup>
+  <Accordion title="PORT">
+    **Default:** `5000`
+
+    The port the Express server listens on. The server binds with:
+
+    ```js
+    const PORT = process.env.PORT || 5000;
+    ```
+
+    Change this if port 5000 is already in use on your machine. If you change it, update `CORS_ORIGIN` on the frontend accordingly and adjust any `curl` commands to use the new port.
+  </Accordion>
+
+  <Accordion title="DATABASE_PATH">
+    **Default:** `./data/vinihotel.db`
+
+    File path to the SQLite database, relative to the `backend/` directory. The `initializeDatabase()` function in `src/utils/database.js` opens or creates this file on first run — you do not need to create it manually. The `backend/data/` directory is also created automatically if it does not exist.
+  </Accordion>
+
+  <Accordion title="JWT_SECRET">
+    **Required** — no safe default in production.
+
+    The secret key used to sign and verify JWT tokens in `src/middleware/auth.js`. The code falls back to `'your_super_secret_jwt_key_change_this'` when the variable is missing, but this fallback value is public and must never be used in production.
+
+    Generate a strong secret with:
+
+    ```bash
+    node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+    ```
+  </Accordion>
+
+  <Accordion title="JWT_EXPIRE">
+    **Default:** `7d`
+
+    Controls how long issued tokens remain valid. Passed directly to `jsonwebtoken`'s `expiresIn` option:
+
+    ```js
+    jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' })
+    ```
+
+    Accepts any value the `jsonwebtoken` library supports: `60` (seconds), `'2h'`, `'30d'`, etc.
+  </Accordion>
+
+  <Accordion title="NODE_ENV">
+    **Values:** `development` | `production`
+
+    Standard Node.js environment flag. Set to `production` when deploying to reduce verbose logging and enable production-level error handling. The Express error middleware uses this to determine response verbosity.
+  </Accordion>
+
+  <Accordion title="CORS_ORIGIN">
+    **Default:** `http://localhost:5173`
+
+    The frontend URL that the backend allows cross-origin requests from. Configured in `server.js` as:
+
+    ```js
+    const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
+    app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
+    ```
+
+    `http://localhost:5173` is the default Vite dev server address. Update this to your deployed frontend URL in production.
+  </Accordion>
+</AccordionGroup>
+
+## Production Checklist
+
+<Note>
+  The following changes are required before deploying ViniHotel to any public environment.
+</Note>
+
+- **Change `JWT_SECRET`** to a cryptographically random value (64+ bytes). Anyone who knows this secret can issue valid tokens for any user.
+- **Set `NODE_ENV=production`** to suppress stack traces in error responses.
+- **Update `CORS_ORIGIN`** to your production frontend domain (e.g., `https://app.vinihotel.com`).
+- **Use HTTPS** for all traffic. JWT tokens transmitted over plain HTTP can be intercepted.
+- **Consider PostgreSQL** for production workloads. SQLite is suitable for development and low-traffic deployments, but the QUICKSTART.md notes that migrating to MySQL/PostgreSQL is recommended for scale.

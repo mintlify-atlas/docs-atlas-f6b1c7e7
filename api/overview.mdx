@@ -1,0 +1,100 @@
+---
+title: "ViniHotel REST API Reference Overview"
+description: "Complete reference for the ViniHotel REST API built on Express, covering the base URL, all resource endpoints, and request/response conventions."
+---
+
+The ViniHotel backend exposes a REST API built with Node.js and Express. Every endpoint is mounted under the `/api/` prefix and communicates exclusively in JSON. In development the server runs on `http://localhost:5000`; all examples in this reference use that base URL.
+
+## Base URL
+
+```
+http://localhost:5000
+```
+
+All routes are prefixed with `/api/`. The server's CORS configuration allows requests from `http://localhost:5173` (the Vite frontend) by default, controlled via the `CORS_ORIGIN` environment variable.
+
+## Endpoint Overview
+
+The table below lists every route grouped by resource, the HTTP method, whether a valid JWT bearer token is required, and the minimum role needed to access the endpoint.
+
+| Resource | Method | Path | Auth | Role |
+|----------|--------|------|------|------|
+| **Auth** | POST | `/api/auth/register` | No | — |
+| | POST | `/api/auth/login` | No | — |
+| | GET | `/api/auth/me` | Yes | any |
+| | PUT | `/api/auth/profile` | Yes | any |
+| **Hotels** | GET | `/api/hotels` | No | — |
+| | GET | `/api/hotels/:idHotel` | No | — |
+| | POST | `/api/hotels` | Yes | admin |
+| | PUT | `/api/hotels/:idHotel` | Yes | admin |
+| | DELETE | `/api/hotels/:idHotel` | Yes | admin |
+| **Rooms** | GET | `/api/rooms` | No | — |
+| | GET | `/api/rooms/hotel/:hotelId` | No | — |
+| | GET | `/api/rooms/:id` | No | — |
+| | POST | `/api/rooms` | Yes | admin |
+| | PUT | `/api/rooms/:id` | Yes | admin |
+| | DELETE | `/api/rooms/:id` | Yes | admin |
+| | POST | `/api/rooms/check-availability` | No | — |
+| **Bookings** | GET | `/api/bookings/my-bookings` | Yes | any |
+| | GET | `/api/bookings/:id` | Yes | any |
+| | POST | `/api/bookings` | Yes | any |
+| | PUT | `/api/bookings/:id` | Yes | any |
+| | POST | `/api/bookings/:id/cancel` | Yes | any |
+| | GET | `/api/bookings` | Yes | admin/staff |
+| **Invoices** | GET | `/api/invoices/my-invoices` | Yes | any |
+| | GET | `/api/invoices/:id` | Yes | any |
+| | POST | `/api/invoices` | Yes | any |
+| | PUT | `/api/invoices/:id` | Yes | any |
+| | GET | `/api/invoices` | Yes | admin |
+| **Health** | GET | `/api/health` | No | — |
+
+## Request and Response Format
+
+All request bodies must be sent as JSON with the `Content-Type: application/json` header. All successful responses return JSON. Error responses follow a consistent shape:
+
+```json
+{ "error": "Human-readable error message" }
+```
+
+## Authentication
+
+Protected routes require a JWT bearer token passed in the `Authorization` header:
+
+```
+Authorization: Bearer <token>
+```
+
+Tokens are issued on register and login, expire after **7 days**, and encode the user's `userId` and `role` (`client`, `staff`, or `admin`). See the [Authentication](/api/authentication) page for the full registration, login, and token usage reference.
+
+## Health Check
+
+Use the health endpoint to verify the server is reachable before making authenticated requests.
+
+```bash
+curl http://localhost:5000/api/health
+# Response: {"status":"Backend running"}
+```
+
+<Note>
+  The health endpoint requires no authentication and is useful for uptime monitoring or confirming that your local development server started successfully.
+</Note>
+
+## Resource Pages
+
+<CardGroup cols={2}>
+  <Card title="Authentication" href="/api/authentication">
+    Register, log in, fetch the current user profile, and update account details.
+  </Card>
+  <Card title="Hotels" href="/api/hotels">
+    Browse hotels, retrieve a single property, and manage hotel records as an admin.
+  </Card>
+  <Card title="Rooms" href="/api/rooms">
+    List rooms, check availability by date range, and manage room inventory as an admin.
+  </Card>
+  <Card title="Bookings" href="/api/bookings">
+    Create and manage guest reservations, cancel bookings, and view all bookings as staff or admin.
+  </Card>
+  <Card title="Invoices" href="/api/invoices">
+    Generate invoices for completed stays, retrieve invoice details, and list all invoices as admin.
+  </Card>
+</CardGroup>

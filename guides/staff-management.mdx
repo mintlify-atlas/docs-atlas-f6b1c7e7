@@ -1,0 +1,123 @@
+---
+title: "Staff Management and Hotel Assignment"
+description: "Add, update, and assign hotel staff to ViniHotel properties. Manage positions, statuses (active, inactive, on-leave), and optional user account links."
+---
+
+The staff management page is the admin tool for maintaining the workforce directory across all ViniHotel properties. It is accessible at the `/staff` route and provides a searchable, filterable table of every employee in the system. Admins can create new staff records, assign employees to specific hotels, update contact details and employment status, and remove staff members when needed. Three summary cards at the top of the page show total staff count, active headcount, and inactive headcount in real time.
+
+<Warning>
+  Access to `/staff` is restricted to users with the **admin** role. Staff members themselves cannot manage other staff records.
+</Warning>
+
+## Staff fields
+
+Each staff record maps to a row in the `staff` table. The following fields are available when creating or editing an employee.
+
+<CardGroup cols={2}>
+  <Card title="name" icon="user">
+    Full name of the staff member (e.g. `María González`). Required. Stored as `name` in the `staff` table.
+  </Card>
+  <Card title="position" icon="briefcase">
+    The job title or role of the employee. Free-text field. Common values in the system are `receptionist`, `housekeeper`, and `manager`, though any string is accepted. Required.
+  </Card>
+  <Card title="hotelId" icon="hotel">
+    The ID of the hotel this staff member is assigned to. Required. Selected from a dropdown that lists all hotels currently in the system. The resolved hotel name is stored alongside the ID as `hotelName`.
+  </Card>
+  <Card title="email" icon="envelope">
+    Work email address for the staff member (e.g. `maria@hotel.com`). Required. Used as the contact identifier in the staff table.
+  </Card>
+  <Card title="phone" icon="phone">
+    Contact phone number (e.g. `+34 912 345 678`). Optional. Displayed in the staff table when present.
+  </Card>
+  <Card title="status" icon="circle">
+    Employment status. See the status reference below. Defaults to `active`.
+  </Card>
+  <Card title="hireDate" icon="calendar">
+    The date the employee was hired, in `YYYY-MM-DD` format. Required. Defaults to today's date when creating a new record.
+  </Card>
+  <Card title="idUsuario" icon="key">
+    Optional foreign key linking the staff record to a user account in the `usuarios` table. Allows the staff member to log in to the system. A staff record can exist without a linked user account.
+  </Card>
+</CardGroup>
+
+## Staff statuses
+
+The `status` field on a staff record accepts the following values, as defined in the `staff` table schema:
+
+| Status | Description |
+|--------|-------------|
+| `active` | Employee is currently working. Shown in green in the staff table. Counted in the **Personal Activo** summary card. |
+| `inactive` | Employee is no longer working (e.g. resigned, terminated). Counted in the **Personal Inactivo** summary card. |
+| `on-leave` | Employee is temporarily away (e.g. sick leave, vacation). Defined in the database schema as a valid status alongside `active` and `inactive`. |
+
+<Note>
+  The frontend form currently exposes `active` and `inactive` as selectable options. The `on-leave` status is defined in the database schema and can be set via the API or direct database update.
+</Note>
+
+## Adding a new staff member
+
+<Steps>
+  <Step title="Open the Add Staff dialog">
+    Navigate to `/staff` and click **Agregar Personal**. The dialog form opens with fields reset to defaults (`status: active`, `hireDate` set to today).
+  </Step>
+  <Step title="Enter required fields">
+    Fill in **Nombre completo**, **Posición**, **Hotel** (selected from the dropdown), and **Email**. The submit button stays disabled until all four are populated.
+  </Step>
+  <Step title="Add optional contact details">
+    Optionally enter a **Teléfono** number. This appears in the contact column of the staff table when provided.
+  </Step>
+  <Step title="Set status and hire date">
+    Choose `active` or `inactive` from the **Estado** dropdown. Adjust the **Fecha de contratación** if the hire date differs from today.
+  </Step>
+  <Step title="Submit">
+    Click **Agregar Empleado**. The new record is saved and appears immediately in the staff table. The resolved hotel name is stored alongside `hotelId` by joining against the loaded hotel list.
+  </Step>
+</Steps>
+
+## Assigning staff to a hotel
+
+Hotel assignment is made through the **Hotel** dropdown in the add/edit form. The dropdown is populated from all hotels currently registered in the system. Selecting a hotel sets `hotelId` on the staff record, which links it to the `hoteles` table via the `staff.hotelId → hoteles.idHotel` foreign key.
+
+The staff table can be filtered by hotel using the **Filtrar por hotel** selector, making it easy to view all employees at a specific property.
+
+## Updating staff status
+
+<Steps>
+  <Step title="Find the employee">
+    Use the search input to filter by name, position, or email. Optionally use the **Filtrar por estado** selector to scope the list to a specific status.
+  </Step>
+  <Step title="Open the edit dialog">
+    Click the pencil icon in the **Acciones** column for the staff member. The form pre-populates with their current data.
+  </Step>
+  <Step title="Change the status">
+    Update the **Estado** dropdown to `active` or `inactive` and click **Actualizar Empleado**. The change is reflected immediately in the table badge.
+  </Step>
+</Steps>
+
+## Staff roles and responsibilities
+
+The `position` field is free-text, but ViniHotel conventionally uses three primary roles:
+
+<CardGroup cols={3}>
+  <Card title="receptionist" icon="concierge-bell">
+    Handles guest check-in and check-out at the front desk. Typically has access to the booking management panel at `/bookings`.
+  </Card>
+  <Card title="housekeeper" icon="broom">
+    Responsible for room cleaning and turnover. Works primarily from the housekeeping dashboard at `/housekeeping` to update room statuses.
+  </Card>
+  <Card title="manager" icon="user-tie">
+    Oversees hotel operations. May have broader system access depending on whether their staff record is linked to a user account with elevated privileges.
+  </Card>
+</CardGroup>
+
+## Staff and user accounts
+
+A staff record and a user account are separate entities. The `idUsuario` column on the `staff` table is a nullable foreign key — a staff member can exist in the system purely as a directory entry without any login credentials.
+
+When a staff member needs to log in (for example, to access the housekeeping or booking management panels), their `staff` record must be linked to an entry in the `usuarios` table by setting `idUsuario`. The `getStaffByUsuario(idUsuario)` model function resolves this relationship at login time.
+
+```
+USUARIOS (1) ─────> (N) STAFF
+A single user account can be linked to multiple staff records (e.g. across hotels),
+but a staff record with no idUsuario cannot log in to the system.
+```

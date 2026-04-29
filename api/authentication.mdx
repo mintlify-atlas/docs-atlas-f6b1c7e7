@@ -1,0 +1,317 @@
+---
+title: "API Authentication with Bearer Tokens"
+description: "How to register, log in, and authenticate ViniHotel API requests using JWT bearer tokens with a 7-day expiry and role-based access control."
+---
+
+The ViniHotel API uses JSON Web Tokens (JWT) for authentication. After registering or logging in, the server returns a signed token that must be included as a bearer token in the `Authorization` header of every protected request. Tokens expire after 7 days and encode the user's ID and role (`client`, `staff`, or `admin`).
+
+## Register
+
+Creates a new user account with the `client` role and returns an immediately usable JWT token.
+
+**`POST /api/auth/register`**
+
+### Request body
+
+<ParamField body="nombre" type="string" required>
+  First name of the user.
+</ParamField>
+
+<ParamField body="apellido" type="string" required>
+  Last name of the user.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Unique email address. Returns `400` if the address is already registered.
+</ParamField>
+
+<ParamField body="contrasena" type="string" required>
+  Plain-text password (minimum 6 characters). Stored as a bcrypt hash — never persisted in plain text.
+</ParamField>
+
+<ParamField body="phone" type="string">
+  Contact phone number.
+</ParamField>
+
+<ParamField body="address" type="string">
+  Postal or street address.
+</ParamField>
+
+<ParamField body="nationality" type="string">
+  User's nationality.
+</ParamField>
+
+<ParamField body="documentId" type="string">
+  Passport or national ID number.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string: `"Usuario registrado exitosamente"`.
+</ResponseField>
+
+<ResponseField name="token" type="string">
+  Signed JWT bearer token, valid for 7 days.
+</ResponseField>
+
+<ResponseField name="user" type="object">
+  Subset of the newly created user record.
+
+  <Expandable title="user fields">
+    <ResponseField name="idUsuario" type="integer">
+      Auto-incremented primary key of the `usuarios` table.
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      First name.
+    </ResponseField>
+    <ResponseField name="apellido" type="string">
+      Last name.
+    </ResponseField>
+    <ResponseField name="email" type="string">
+      Email address.
+    </ResponseField>
+    <ResponseField name="rol" type="string">
+      Always `"client"` for self-registration.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Juan","apellido":"Perez","email":"juan@example.com","contrasena":"password123"}'
+```
+
+```json Response
+{
+  "message": "Usuario registrado exitosamente",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "idUsuario": 1,
+    "nombre": "Juan",
+    "apellido": "Perez",
+    "email": "juan@example.com",
+    "rol": "client"
+  }
+}
+```
+
+</CodeGroup>
+
+---
+
+## Login
+
+Authenticates an existing user by email and password and returns a fresh JWT token.
+
+**`POST /api/auth/login`**
+
+### Request body
+
+<ParamField body="email" type="string" required>
+  Registered email address.
+</ParamField>
+
+<ParamField body="contrasena" type="string" required>
+  Account password. Note the Spanish field name — `contrasena`, not `password`.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string: `"Login exitoso"`.
+</ResponseField>
+
+<ResponseField name="token" type="string">
+  Signed JWT bearer token, valid for 7 days.
+</ResponseField>
+
+<ResponseField name="user" type="object">
+  Core user fields: `idUsuario`, `nombre`, `apellido`, `email`, `rol`.
+</ResponseField>
+
+### Example
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"juan@example.com","contrasena":"password123"}'
+```
+
+```json Response
+{
+  "message": "Login exitoso",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "idUsuario": 1,
+    "nombre": "Juan",
+    "apellido": "Perez",
+    "email": "juan@example.com",
+    "rol": "client"
+  }
+}
+```
+
+</CodeGroup>
+
+<Warning>
+  Both register and login return a generic `401` error (`"Email o contraseña incorrectos"`) when credentials are wrong, without revealing which field failed, to prevent user enumeration.
+</Warning>
+
+---
+
+## Get Current User
+
+Returns the full profile of the authenticated user, including optional fields set at registration or via profile update.
+
+**`GET /api/auth/me`** — requires `Authorization: Bearer <token>`
+
+### Response
+
+<ResponseField name="idUsuario" type="integer">
+  User's primary key.
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  First name.
+</ResponseField>
+
+<ResponseField name="apellido" type="string">
+  Last name.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Email address.
+</ResponseField>
+
+<ResponseField name="rol" type="string">
+  Role: `client`, `staff`, or `admin`.
+</ResponseField>
+
+<ResponseField name="phone" type="string">
+  Contact phone number, if set.
+</ResponseField>
+
+<ResponseField name="address" type="string">
+  Address, if set.
+</ResponseField>
+
+<ResponseField name="dateOfBirth" type="string">
+  Date of birth, if set.
+</ResponseField>
+
+<ResponseField name="nationality" type="string">
+  Nationality, if set.
+</ResponseField>
+
+<ResponseField name="documentId" type="string">
+  Passport or national ID number, if set.
+</ResponseField>
+
+### Example
+
+<CodeGroup>
+
+```bash cURL
+curl -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  http://localhost:5000/api/auth/me
+```
+
+```json Response
+{
+  "idUsuario": 1,
+  "nombre": "Juan",
+  "apellido": "Perez",
+  "email": "juan@example.com",
+  "rol": "client",
+  "phone": null,
+  "address": null,
+  "dateOfBirth": null,
+  "nationality": null,
+  "documentId": null
+}
+```
+
+</CodeGroup>
+
+---
+
+## Update Profile
+
+Updates mutable fields on the authenticated user's account. The `email`, `rol`, and `contrasena` fields cannot be changed through this endpoint.
+
+**`PUT /api/auth/profile`** — requires `Authorization: Bearer <token>`
+
+### Request body
+
+Send any subset of the following fields; omitted fields are set to `null` in the database.
+
+<ParamField body="nombre" type="string">
+  Updated first name.
+</ParamField>
+
+<ParamField body="apellido" type="string">
+  Updated last name.
+</ParamField>
+
+<ParamField body="phone" type="string">
+  Updated phone number.
+</ParamField>
+
+<ParamField body="address" type="string">
+  Updated address.
+</ParamField>
+
+<ParamField body="dateOfBirth" type="string">
+  Updated date of birth.
+</ParamField>
+
+<ParamField body="nationality" type="string">
+  Updated nationality.
+</ParamField>
+
+<ParamField body="documentId" type="string">
+  Updated passport or national ID number.
+</ParamField>
+
+### Response
+
+```json
+{ "message": "Perfil actualizado exitosamente" }
+```
+
+---
+
+## Using the Token
+
+Include the token returned by register or login in every request to a protected endpoint:
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+The frontend stores the token in `localStorage` and the `apiClient` utility attaches it automatically. When building your own client, retrieve the token after login and attach it to every subsequent request header.
+
+<Note>
+  Tokens encode `userId` and `role` in their payload and are signed with the `JWT_SECRET` environment variable. Always set a strong, unique `JWT_SECRET` in production — never use the default value shipped in the repository.
+</Note>
+
+---
+
+## Error Responses
+
+| HTTP Status | Condition |
+|-------------|-----------|
+| `400 Bad Request` | Validation failed (e.g. missing required field, email already registered) |
+| `401 Unauthorized` | Token missing, expired, or signature invalid — the client must re-authenticate |
+| `403 Forbidden` | Token is valid but the user's role lacks permission for the requested resource |
+| `404 Not Found` | The user referenced by the token no longer exists in the database |
+
+When a `401` is returned on a protected route, discard the stored token and redirect the user to the login screen. A `403` means the endpoint requires a higher role (`staff` or `admin`) than the current user holds.
